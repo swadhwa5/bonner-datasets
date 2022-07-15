@@ -1,0 +1,12 @@
+@article{Chang2019,
+    doi = {10.1038/s41597-019-0052-3},
+    url = {https://doi.org/10.1038/s41597-019-0052-3},
+    year = {2019},
+    month = may,
+    publisher = {Springer Science and Business Media {LLC}},
+    volume = {6},
+    number = {1},
+    author = {Nadine Chang and John A. Pyles and Austin Marcus and Abhinav Gupta and Michael J. Tarr and Elissa M. Aminoff},
+    title = {{BOLD}5000,  a public {fMRI} dataset while viewing 5000 visual images},
+    journal = {Scientific Data}
+}
