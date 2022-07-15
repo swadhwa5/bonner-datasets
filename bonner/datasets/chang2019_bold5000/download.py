@@ -6,7 +6,18 @@ import subprocess
 from tqdm import tqdm
 
 from ..utils import download_file, unzip_file
-from .utils import _FIGSHARE_API_BASE_URL, _FIGSHARE_BOLD5000_V1_ARTICLE_ID, _FIGSHARE_BOLD5000_V2_ARTICLE_ID, _URL_IMAGES, _S3_ROI_MASKS, N_SUBJECTS, N_SESSIONS, _get_brain_mask_filename, _get_imagenames_filename, _get_betas_filename
+from .utils import (
+    _FIGSHARE_API_BASE_URL,
+    _FIGSHARE_BOLD5000_V1_ARTICLE_ID,
+    _FIGSHARE_BOLD5000_V2_ARTICLE_ID,
+    _URL_IMAGES,
+    _S3_ROI_MASKS,
+    N_SUBJECTS,
+    N_SESSIONS,
+    _get_brain_mask_filename,
+    _get_imagenames_filename,
+    _get_betas_filename,
+)
 
 
 def download_dataset(force_download: bool = False, **kwargs) -> None:
@@ -18,14 +29,14 @@ def download_dataset(force_download: bool = False, **kwargs) -> None:
     )
     urls = {file["name"]: file["download_url"] for file in files}
 
-    for subject in tqdm(range(N_SUBJECTS), desc="subject"):
+    for subject in tqdm(range(N_SUBJECTS), desc="subject", leave=False):
         filenames = [
             _get_brain_mask_filename(subject),  # brain masks
             _get_imagenames_filename(subject),  # image names
         ]
         for filename in filenames:
             download_file(urls[filename], Path(filename), force=force_download)
-        for session in tqdm(range(N_SESSIONS[subject]), desc="session"):
+        for session in tqdm(range(N_SESSIONS[subject]), desc="session", leave=False):
             filename = _get_betas_filename(subject, session)  # betas
             download_file(urls[filename], Path(filename), force=force_download)
 
@@ -35,13 +46,13 @@ def download_dataset(force_download: bool = False, **kwargs) -> None:
         ).content
     )
     urls = {file["name"]: file["download_url"] for file in files}
-    urls = (
-        urls["BOLD5000_Structural.zip"],  # anatomical scans
-        _URL_IMAGES,  # stimulus images
-    )
-    for url in urls:
-        filepath = download_file(url, force=force_download)
-        unzip_file(filepath)
+    urls = {
+        "BOLD5000_Structural.zip": urls["BOLD5000_Structural.zip"],
+        "stimuli.zip": _URL_IMAGES,
+    }
+    for filename, url in urls.items():
+        filepath = download_file(url, filepath=Path(filename), force=force_download)
+        unzip_file(filepath, extract_dir=Path.cwd(), remove_zip=False)
 
     # ROI masks
     subprocess.run(

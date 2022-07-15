@@ -1,4 +1,3 @@
-
 import itertools
 from pathlib import Path
 from typing import Dict, Tuple
@@ -12,10 +11,22 @@ from tqdm import tqdm
 from bonner.brainio.assembly import package
 
 from ..utils import parser, load_nii
-from .utils import IDENTIFIER, N_SUBJECTS, ROIS, N_SESSIONS, N_SESSIONS_HELD_OUT, N_MAX_SESSIONS, N_TRIALS_PER_SESSION, format_image_id, load_stimulus_metadata
+from .utils import (
+    IDENTIFIER,
+    N_SUBJECTS,
+    ROIS,
+    N_SESSIONS,
+    N_SESSIONS_HELD_OUT,
+    N_MAX_SESSIONS,
+    N_TRIALS_PER_SESSION,
+    format_image_id,
+    load_stimulus_metadata,
+)
 
 
-def package_assemblies(catalog_name: str, location_type: str, location: str, **kwargs) -> None:
+def package_assemblies(
+    catalog_name: str, location_type: str, location: str, **kwargs
+) -> None:
     image_ids = _extract_image_ids()
 
     for subject in range(N_SUBJECTS):

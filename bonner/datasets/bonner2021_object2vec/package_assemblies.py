@@ -6,7 +6,15 @@ from scipy.io import loadmat
 import nibabel as nib
 from bonner.brainio.assembly import package
 
-from .utils import _load_conditions, IDENTIFIER, N_SUBJECTS, _URLS, _FILENAMES, ROIS, BRAIN_DIMENSIONS
+from .utils import (
+    _load_conditions,
+    IDENTIFIER,
+    N_SUBJECTS,
+    _URLS,
+    _FILENAMES,
+    ROIS,
+    BRAIN_DIMENSIONS,
+)
 
 
 def create_assembly(subject: int) -> xr.DataArray:
@@ -30,9 +38,7 @@ def create_assembly(subject: int) -> xr.DataArray:
     for roi, _hemisphere in itertools.product(ROIS.keys(), ("L", "R")):
         hemisphere[roi_indices[roi][_hemisphere]] = _hemisphere
 
-    noise_ceilings = loadmat(
-        _FILENAMES["noise_ceilings"][subject], simplify_cells=True
-    )
+    noise_ceilings = loadmat(_FILENAMES["noise_ceilings"][subject], simplify_cells=True)
 
     # TODO check whether MATLAB's ordering differs from Python (FORTRAN vs C)
     assembly = (
@@ -93,7 +99,9 @@ def create_assembly(subject: int) -> xr.DataArray:
     return assembly
 
 
-def package_assemblies(catalog_name: str, location_type: str, location: str, **kwargs) -> None:
+def package_assemblies(
+    catalog_name: str, location_type: str, location: str, **kwargs
+) -> None:
     for subject in range(N_SUBJECTS):
         package(
             identifier=f"{IDENTIFIER}-subject{subject}",

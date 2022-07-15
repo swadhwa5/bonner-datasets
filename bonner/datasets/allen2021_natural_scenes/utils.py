@@ -43,5 +43,7 @@ def load_stimulus_metadata() -> pd.DataFrame:
         Path.cwd() / "nsddata" / "experiments" / "nsd" / "nsd_stim_info_merged.csv",
         sep=",",
     ).rename(columns={"Unnamed: 0": "stimulus_id"})
-    metadata["stimulus_id"] = metadata["stimulus_id"].apply(lambda idx: format_image_id(idx))
+    metadata["stimulus_id"] = metadata["stimulus_id"].apply(
+        lambda idx: format_image_id(idx)
+    )
     return metadata

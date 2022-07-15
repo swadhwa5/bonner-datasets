@@ -75,23 +75,15 @@ _URLS = {
 _FILENAMES = {
     "stimuli": "stimuli.zip",
     "conditions": "conditions.mat",
-    "activations": [
-        f"betas_subj{subject}.mat" for subject in range(N_SUBJECTS)
-    ],
+    "activations": [f"betas_subj{subject}.mat" for subject in range(N_SUBJECTS)],
     "noise_ceilings": [
-        f"noise_ceilings_subj{subject}.mat"
-        for subject in range(N_SUBJECTS)
+        f"noise_ceilings_subj{subject}.mat" for subject in range(N_SUBJECTS)
     ],
-    "rois": [
-        f"rois_subj{subject}.mat" for subject in range(N_SUBJECTS)
-    ],
-    "cv_sets": [
-        f"sets_subj{subject}.mat" for subject in range(N_SUBJECTS)
-    ],
+    "rois": [f"rois_subj{subject}.mat" for subject in range(N_SUBJECTS)],
+    "cv_sets": [f"sets_subj{subject}.mat" for subject in range(N_SUBJECTS)],
     "contrasts": {
         contrast: [
-            f"contrast_{contrast}_subj{subject}.nii"
-            for subject in range(N_SUBJECTS)
+            f"contrast_{contrast}_subj{subject}.nii" for subject in range(N_SUBJECTS)
         ]
         for contrast in ("scrambled", "objects", "scenes", "faces")
     },

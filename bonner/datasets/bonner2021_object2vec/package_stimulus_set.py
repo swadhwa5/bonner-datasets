@@ -8,7 +8,9 @@ from bonner.brainio.stimulus_set import package
 from .utils import _load_conditions, IDENTIFIER, N_SUBJECTS, _FILENAMES
 
 
-def package_stimulus_set(catalog_name: str, location_type: str, location: str, **kwargs) -> None:
+def package_stimulus_set(
+    catalog_name: str, location_type: str, location: str, **kwargs
+) -> None:
     conditions = _load_conditions()
     metadata = {}
     metadata["condition"] = conditions
@@ -20,7 +22,11 @@ def package_stimulus_set(catalog_name: str, location_type: str, location: str, *
         metadata[f"cv_set_subject{subject}"] = cv_set
     metadata = pd.DataFrame.from_dict(metadata)
 
-    paths = [path for path in sorted((Path("stimuli").rglob("*.*"))) if path.suffix in (".jpg", ".png")]
+    paths = [
+        path
+        for path in sorted((Path("stimuli").rglob("*.*")))
+        if path.suffix in (".jpg", ".png")
+    ]
     stimulus_set = pd.DataFrame.from_dict(
         {
             "stimulus_id": [

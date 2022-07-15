@@ -7,10 +7,20 @@ import xarray as xr
 from bonner.brainio.assembly import package
 
 from ..utils import load_nii
-from .utils import IDENTIFIER, N_SUBJECTS, N_SESSIONS, ROIS, _get_betas_filename, _get_brain_mask_filename, _get_imagenames_filename
+from .utils import (
+    IDENTIFIER,
+    N_SUBJECTS,
+    N_SESSIONS,
+    ROIS,
+    _get_betas_filename,
+    _get_brain_mask_filename,
+    _get_imagenames_filename,
+)
 
 
-def package_assemblies(catalog_name: str, location_type: str, location: str, **kwargs) -> None:
+def package_assemblies(
+    catalog_name: str, location_type: str, location: str, **kwargs
+) -> None:
     for subject in tqdm(range(N_SUBJECTS), desc="subject"):
         mask = _load_brain_mask(subject)
         structural_scan = _load_structural_scan(subject)
@@ -28,7 +38,7 @@ def package_assemblies(catalog_name: str, location_type: str, location: str, **k
             .rename(f"{IDENTIFIER}-subject{subject}")
             .assign_coords(
                 {
-                    "image_id": (
+                    "stimulus_id": (
                         "presentation",
                         _load_image_filename_stems(subject),
                     ),

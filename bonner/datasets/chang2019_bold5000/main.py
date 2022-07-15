@@ -10,7 +10,7 @@ if __name__ == "__main__":
         IDENTIFIER,
         pipeline=[
             download_dataset,
-            package_stimulus_set,
+            # package_stimulus_set,
             package_assemblies,
-        ]
+        ],
     )

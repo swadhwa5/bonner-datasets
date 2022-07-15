@@ -7,7 +7,15 @@ import boto3
 import h5py
 from PIL import Image
 
-from .utils import N_SUBJECTS, ROIS, N_SESSIONS, N_SESSIONS_HELD_OUT, N_STIMULI, BUCKET_NAME, format_image_id
+from .utils import (
+    N_SUBJECTS,
+    ROIS,
+    N_SESSIONS,
+    N_SESSIONS_HELD_OUT,
+    N_STIMULI,
+    BUCKET_NAME,
+    format_image_id,
+)
 
 
 def download_dataset(force_download: bool = False, **kwargs) -> None:

@@ -6,8 +6,10 @@ from bonner.brainio.stimulus_set import package
 from .utils import IDENTIFIER
 
 
-def package_stimulus_set(catalog_name: str, location_type: str, location: str, **kwargs) -> None:
-    parent_dir = Path("BOLD5000_Stimuli" / "Scene_Stimuli" / "Presented_Stimuli")
+def package_stimulus_set(
+    catalog_name: str, location_type: str, location: str, **kwargs
+) -> None:
+    parent_dir = Path("BOLD5000_Stimuli") / "Scene_Stimuli" / "Presented_Stimuli"
     image_paths = list(parent_dir.rglob("*.*"))
     stimulus_set = pd.DataFrame.from_dict(
         {
