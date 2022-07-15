@@ -3,18 +3,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat
-from brainio.stimulus_set import package
+from bonner.brainio.stimulus_set import package
 
-from .utils import load_conditions
-from .constants import IDENTIFIER, N_SUBJECTS, FILENAMES
+from .utils import _load_conditions, IDENTIFIER, N_SUBJECTS, _FILENAMES
 
 
 def package_stimulus_set(catalog_name: str, location_type: str, location: str, **kwargs) -> None:
-    conditions = load_conditions()
+    conditions = _load_conditions()
     metadata = {}
     metadata["condition"] = conditions
     for subject in range(N_SUBJECTS):
-        sets = loadmat(FILENAMES["cv_sets"][subject], simplify_cells=True)["sets"]
+        sets = loadmat(_FILENAMES["cv_sets"][subject], simplify_cells=True)["sets"]
         cv_set = np.empty(len(conditions), dtype=np.int8)
         for i_set, set_ in enumerate(sets):
             cv_set[np.isin(conditions, set_)] = i_set

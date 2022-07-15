@@ -4,11 +4,9 @@ import numpy as np
 import xarray as xr
 from scipy.io import loadmat
 import nibabel as nib
-from brainio.assembly import package
+from bonner.brainio.assembly import package
 
-from ..utils import package
-from .utils import load_conditions
-from .constants import IDENTIFIER, N_SUBJECTS, URLS, FILENAMES, ROIS, BRAIN_DIMENSIONS
+from .utils import _load_conditions, IDENTIFIER, N_SUBJECTS, _URLS, _FILENAMES, ROIS, BRAIN_DIMENSIONS
 
 
 def create_assembly(subject: int) -> xr.DataArray:
@@ -19,7 +17,7 @@ def create_assembly(subject: int) -> xr.DataArray:
     :return: functional activations with "presentation" and "neuroid" dimensions
     :rtype: xr.DataArray
     """
-    activations = loadmat(FILENAMES["activations"][subject], simplify_cells=True)[
+    activations = loadmat(_FILENAMES["activations"][subject], simplify_cells=True)[
         "betas"
     ]
     x, y, z = np.unravel_index(
@@ -27,13 +25,13 @@ def create_assembly(subject: int) -> xr.DataArray:
     )
     n_voxels = activations.shape[1]
 
-    roi_indices = loadmat(FILENAMES["rois"][subject], simplify_cells=True)["indices"]
+    roi_indices = loadmat(_FILENAMES["rois"][subject], simplify_cells=True)["indices"]
     hemisphere = np.full(n_voxels, fill_value="", dtype="<U1")
     for roi, _hemisphere in itertools.product(ROIS.keys(), ("L", "R")):
         hemisphere[roi_indices[roi][_hemisphere]] = _hemisphere
 
     noise_ceilings = loadmat(
-        FILENAMES["noise_ceilings"][subject], simplify_cells=True
+        _FILENAMES["noise_ceilings"][subject], simplify_cells=True
     )
 
     # TODO check whether MATLAB's ordering differs from Python (FORTRAN vs C)
@@ -42,7 +40,7 @@ def create_assembly(subject: int) -> xr.DataArray:
             data=activations,
             dims=("condition", "neuroid", "repetition"),
             coords={
-                "stimulus_id": ("condition", load_conditions()),
+                "stimulus_id": ("condition", _load_conditions()),
                 "x": ("neuroid", x),
                 "y": ("neuroid", y),
                 "z": ("neuroid", z),
@@ -69,11 +67,11 @@ def create_assembly(subject: int) -> xr.DataArray:
             {
                 f"contrast_{contrast}": (
                     "neuroid",
-                    nib.load(FILENAMES["contrasts"][contrast][subject])
+                    nib.load(_FILENAMES["contrasts"][contrast][subject])
                     .get_fdata()
                     .reshape(-1),
                 )
-                for contrast in URLS["contrasts"].keys()
+                for contrast in _URLS["contrasts"].keys()
             }
         )
         .assign_coords(

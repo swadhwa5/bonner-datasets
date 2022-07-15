@@ -1,8 +1,8 @@
-from ..utils import package
-from .constants import IDENTIFIER
-from .download import download_dataset
-from .package_stimulus_set import package_stimulus_set
-from .package_assemblies import package_assemblies
+from bonner.datasets.utils import package
+from bonner.datasets.bonner2021_object2vec.utils import IDENTIFIER
+from bonner.datasets.bonner2021_object2vec.download import download_dataset
+from bonner.datasets.bonner2021_object2vec.package_stimulus_set import package_stimulus_set
+from bonner.datasets.bonner2021_object2vec.package_assemblies import package_assemblies
 
 
 if __name__ == "__main__":
