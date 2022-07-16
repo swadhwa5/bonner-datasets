@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bonner-datasets"
+description = "Bonner lab utilities for handling neural and image datasets"
+readme = "README.md"
+keywords = ["Bonner Lab", "datasets"]
+author = "Raj Magesh Gauthaman"
+author_email = "rgautha1@jh.edu"
+url = "https://github.com/raj-magesh/bonner-datasets"
+license = {text = "GNU General Public License v3.0"}
+dependencies = [
+    "boto3",
+    "numpy",
+    "pandas",
+    "xarray",
+    "h5py",
+    "scipy",
+    "nipy",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+docs = ["sphinx"]
+dev = ["black", "mypy"]
+
+[tool.black]
+preview = true
+
+[tool.mypy]
+namespace_packages = true
+ignore_missing_imports = true
+
+disallow_untyped_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+# disallow_any_unimported = true
+# disallow_any_expr = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+# warn_return_any = true
+warn_unreachable = true
+
+allow_redefinition = true
