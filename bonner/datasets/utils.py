@@ -107,7 +107,7 @@ def package(identifier: str, pipeline: Iterable[Callable]):
         "-n",
         "--catalog-name",
         type=str,
-        default="brainio_bonner",
+        default="bonner-brainio",
         help="BrainIO catalog name",
     )
     parser.add_argument(
@@ -121,7 +121,7 @@ def package(identifier: str, pipeline: Iterable[Callable]):
         "-l",
         "--location",
         type=str,
-        default="cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio_bonner",
+        default="cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-brainio",
         help="URL to remote directory",
     )
     parser.add_argument(
