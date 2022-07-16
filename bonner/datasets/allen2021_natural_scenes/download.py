@@ -14,7 +14,7 @@ from .utils import (
     N_SESSIONS_HELD_OUT,
     N_STIMULI,
     BUCKET_NAME,
-    format_image_id,
+    format_stimulus_id,
 )
 
 
@@ -61,7 +61,7 @@ def download_dataset(force_download: bool = False, **kwargs) -> None:
         )
 
     s3 = boto3.client("s3")
-    for file in [Path.cwd() / file for file in files]:
+    for file in [Path(file) for file in files]:
         if force_download or not file.exists():
             file.parent.mkdir(exist_ok=True, parents=True)
             with open(file, "wb") as f:
@@ -83,12 +83,14 @@ def save_images(**kwargs) -> None:
     """Save HDF5-formatted image stimuli as PNG files."""
 
     stimuli = h5py.File(
-        Path.cwd() / "nsddata_stimuli" / "stimuli" / "nsd" / "nsd_stimuli.hdf5", "r"
+        Path("nsddata_stimuli") / "stimuli" / "nsd" / "nsd_stimuli.hdf5", "r"
     )["imgBrick"]
 
     images_dir = Path("images")
     images_dir.mkdir(parents=True, exist_ok=True)
-    image_paths = [images_dir / f"{format_image_id(image)}.png" for image in range(N_STIMULI)]
+    image_paths = [
+        images_dir / f"{format_stimulus_id(image)}.png" for image in range(N_STIMULI)
+    ]
     images = (
         Image.fromarray(stimuli[stimulus, :, :, :])
         for stimulus in range(stimuli.shape[0])

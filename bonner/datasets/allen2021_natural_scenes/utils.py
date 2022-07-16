@@ -29,7 +29,7 @@ ROIS = {
 }
 
 
-def format_image_id(idx: int) -> str:
+def format_stimulus_id(idx: int) -> str:
     return f"image{idx:05}"
 
 
@@ -44,6 +44,6 @@ def load_stimulus_metadata() -> pd.DataFrame:
         sep=",",
     ).rename(columns={"Unnamed: 0": "stimulus_id"})
     metadata["stimulus_id"] = metadata["stimulus_id"].apply(
-        lambda idx: format_image_id(idx)
+        lambda idx: format_stimulus_id(idx)
     )
     return metadata

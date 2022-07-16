@@ -19,7 +19,7 @@ from .utils import (
     N_SESSIONS_HELD_OUT,
     N_MAX_SESSIONS,
     N_TRIALS_PER_SESSION,
-    format_image_id,
+    format_stimulus_id,
     load_stimulus_metadata,
 )
 
@@ -27,7 +27,7 @@ from .utils import (
 def package_assemblies(
     catalog_name: str, location_type: str, location: str, **kwargs
 ) -> None:
-    image_ids = _extract_image_ids()
+    stimulus_ids = _extract_stimulus_ids()
 
     for subject in range(N_SUBJECTS):
         mask = _load_brain_mask(subject)
@@ -39,7 +39,7 @@ def package_assemblies(
                     _load_activations(
                         subject=subject,
                         session=session,
-                        image_ids=image_ids[subject, session, :],
+                        stimulus_ids=stimulus_ids[subject, session, :],
                     ).sel({"neuroid": mask})
                     for session in tqdm(
                         # TODO remove N_SESSIONS_HELD_OUT all data are released
@@ -54,15 +54,15 @@ def package_assemblies(
                 {
                     "ncsnr": (
                         "neuroid",
-                        _load_ncsnr(subject).sel({"neuroid": mask}),
+                        _load_ncsnr(subject).sel({"neuroid": mask}).data,
                     ),
                     "ncsnr_split1": (
                         "neuroid",
-                        _load_ncsnr(subject, split=1).sel({"neuroid": mask}),
+                        _load_ncsnr(subject, split=1).sel({"neuroid": mask}).data,
                     ),
                     "ncsnr_split2": (
                         "neuroid",
-                        _load_ncsnr(subject, split=2).sel({"neuroid": mask}),
+                        _load_ncsnr(subject, split=2).sel({"neuroid": mask}).data,
                     ),
                 }
             )
@@ -79,7 +79,7 @@ def package_assemblies(
                     "brain_dimensions": mask.attrs["brain_dimensions"],
                     "structural_scan": _load_structural_scan(subject)
                     .sel({"neuroid": mask})
-                    .values,
+                    .data,
                     "identifier": f"{IDENTIFIER}-subject{subject}",
                     "stimulus_set_identifier": IDENTIFIER,
                 }
@@ -87,7 +87,7 @@ def package_assemblies(
         )
 
         package(
-            identifier=IDENTIFIER,
+            identifier=f"{IDENTIFIER}-subject{subject}",
             assembly=assembly,
             catalog_name=catalog_name,
             location_type=location_type,
@@ -95,10 +95,10 @@ def package_assemblies(
         )
 
 
-def _extract_image_ids() -> xr.DataArray:
+def _extract_stimulus_ids() -> xr.DataArray:
     """Extract and format image IDs for all trials.
 
-    :return: image_ids seen at each trial with "subject", "session" and "trial" dimensions
+    :return: stimulus_ids seen at each trial with "subject", "session" and "trial" dimensions
     :rtype: xr.DataArray
     """
     metadata = load_stimulus_metadata()
@@ -106,19 +106,19 @@ def _extract_image_ids() -> xr.DataArray:
     indices = np.nonzero(metadata)
     trials = metadata[indices[0], indices[1]] - 1  # fix 1-indexing
 
-    _image_ids = [format_image_id(idx) for idx in indices[0]]
+    _stimulus_ids = [format_stimulus_id(idx) for idx in indices[0]]
     subject_ids = indices[1] // 3  # each subject has 3 columns, 1 for each possible rep
     session_ids = trials // N_TRIALS_PER_SESSION
     intra_session_trial_ids = trials % N_TRIALS_PER_SESSION
 
-    image_ids = xr.DataArray(
+    stimulus_ids = xr.DataArray(
         data=np.full(
             (N_SUBJECTS, N_MAX_SESSIONS, N_TRIALS_PER_SESSION), "", dtype="<U10"
         ),
         dims=("subject", "session", "trial"),
     )
-    image_ids.values[subject_ids, session_ids, intra_session_trial_ids] = _image_ids
-    return image_ids
+    stimulus_ids.values[subject_ids, session_ids, intra_session_trial_ids] = _stimulus_ids
+    return stimulus_ids
 
 
 def _load_roi_mapping(
@@ -283,7 +283,7 @@ def _load_activations(
     *,
     subject: int,
     session: int,
-    image_ids: xr.DataArray,
+    stimulus_ids: xr.DataArray,
 ) -> xr.DataArray:
     """Load functional activations.
 
@@ -291,8 +291,8 @@ def _load_activations(
     :type subject: int
     :param session: session ID
     :type session: int
-    :param image_ids: image IDs presented during the session
-    :type image_ids: xr.DataArray
+    :param stimulus_ids: image IDs presented during the session
+    :type stimulus_ids: xr.DataArray
     :return: functional activations with "presentation" and "neuroid" dimensions
     :rtype: xr.DataArray
     """
@@ -311,7 +311,7 @@ def _load_activations(
             data=np.array(activations, dtype=np.int16),
             dims=("presentation", "z", "y", "x"),
             coords={
-                "image_id": ("presentation", image_ids.astype(str)),
+                "stimulus_id": ("presentation", stimulus_ids.data),
                 "session": (
                     "presentation",
                     session * np.ones(activations.shape[0], dtype=np.int64),
