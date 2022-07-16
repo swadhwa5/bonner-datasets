@@ -88,7 +88,7 @@ def save_images(**kwargs) -> None:
 
     images_dir = Path("images")
     images_dir.mkdir(parents=True, exist_ok=True)
-    image_paths = [f"{format_image_id(image)}.png" for image in range(N_STIMULI)]
+    image_paths = [images_dir / f"{format_image_id(image)}.png" for image in range(N_STIMULI)]
     images = (
         Image.fromarray(stimuli[stimulus, :, :, :])
         for stimulus in range(stimuli.shape[0])

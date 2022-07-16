@@ -10,7 +10,7 @@ import nibabel as nib
 from tqdm import tqdm
 from bonner.brainio.assembly import package
 
-from ..utils import parser, load_nii
+from ..utils import load_nii
 from .utils import (
     IDENTIFIER,
     N_SUBJECTS,
