@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ..utils import download_file, unzip_file
+from ...utils import download_file, unzip_file
 from .utils import N_SUBJECTS, _URLS, _FILENAMES
 
 

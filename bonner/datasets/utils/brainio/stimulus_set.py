@@ -114,6 +114,7 @@ def _create_csv(
     :rtype: Path
     """
     filepath = BRAINIO_HOME / catalog_name / f"{identifier}.csv"
+    filepath.parent.mkdir(parents=True, exist_ok=True)
     stimulus_set.to_csv(filepath, index=False)
     return filepath
 
@@ -138,8 +139,9 @@ def _create_zip(
     :return: path to the ZIP archive
     :rtype: Path
     """
-    filepath_zip = BRAINIO_HOME / catalog_name / f"{identifier}.zip"
-    with zipfile.ZipFile(filepath_zip, "w") as zip:
+    filepath = BRAINIO_HOME / catalog_name / f"{identifier}.zip"
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(filepath, "w") as zip:
         for filename in stimulus_set["filename"]:
             zip.write(stimulus_dir / filename, arcname=filename)
-    return filepath_zip
+    return filepath

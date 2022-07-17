@@ -1,4 +1,4 @@
-from typing import Iterable, Callable
+from typing import Generator, Iterable, Callable
 import argparse
 from contextlib import contextmanager
 import os
@@ -16,7 +16,7 @@ DATASETS_HOME = Path(os.getenv("DATASETS_HOME", str(Path.home() / "brainio")))
 
 
 @contextmanager
-def working_directory(directory):
+def working_directory(directory: Path):
     owd = os.getcwd()
     try:
         os.chdir(directory)
@@ -28,9 +28,9 @@ def working_directory(directory):
 def download_file(
     url: str,
     filepath: Path = None,
-    stream=True,
-    allow_redirects=True,
-    chunk_size=1024**2,
+    stream: bool = True,
+    allow_redirects: bool = True,
+    chunk_size: int = 1024**2,
     force: bool = True,
 ) -> Path:
     if filepath is None:
@@ -47,7 +47,9 @@ def download_file(
     return filepath
 
 
-def untar_file(filepath: Path, extract_dir: Path = None, remove_tar=True):
+def untar_file(
+    filepath: Path, extract_dir: Path = None, remove_tar: bool = True
+) -> Path:
     if extract_dir is None:
         extract_dir = Path("/tmp")
     with tarfile.open(filepath) as tar:
@@ -57,7 +59,9 @@ def untar_file(filepath: Path, extract_dir: Path = None, remove_tar=True):
     return extract_dir
 
 
-def unzip_file(filepath: Path, extract_dir: Path = None, remove_zip=True):
+def unzip_file(
+    filepath: Path, extract_dir: Path = None, remove_zip: bool = True
+) -> Path:
     if extract_dir is None:
         extract_dir = Path("/tmp")
     with zipfile.ZipFile(filepath, "r") as f:
@@ -101,7 +105,7 @@ def load_nii(filepath: Path, non_spatial_dim: int = -1) -> xr.DataArray:
     )
 
 
-def package(identifier: str, pipeline: Iterable[Callable]):
+def package(identifier: str, pipeline: Iterable[Callable]) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-n",
@@ -114,8 +118,8 @@ def package(identifier: str, pipeline: Iterable[Callable]):
         "-t",
         "--location-type",
         type=str,
-        default="network-storage",
-        help="network-storage or S3",
+        default="rsync",
+        help="rsync or S3",
     )
     parser.add_argument(
         "-l",
@@ -147,5 +151,6 @@ def package(identifier: str, pipeline: Iterable[Callable]):
     with working_directory(dir_cache):
         for pipe in pipeline:
             pipe(**vars(args))
+
     if args.clear_cache:
         shutil.rmtree(dir_cache)

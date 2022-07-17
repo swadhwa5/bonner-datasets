@@ -1,11 +1,12 @@
+from typing import Mapping
 import itertools
 
 import numpy as np
 import xarray as xr
 from scipy.io import loadmat
 import nibabel as nib
-from bonner.brainio.assembly import package
 
+from ...utils.brainio.assembly import package
 from .utils import (
     _load_conditions,
     IDENTIFIER,
@@ -100,11 +101,13 @@ def create_assembly(subject: int) -> xr.DataArray:
 
 
 def package_assemblies(
-    catalog_name: str, location_type: str, location: str, **kwargs
+    catalog_name: str,
+    location_type: str,
+    location: str,
+    **kwargs: Mapping[str, str],
 ) -> None:
     for subject in range(N_SUBJECTS):
         package(
-            identifier=f"{IDENTIFIER}-subject{subject}",
             assembly=create_assembly(subject),
             catalog_name=catalog_name,
             location_type=location_type,

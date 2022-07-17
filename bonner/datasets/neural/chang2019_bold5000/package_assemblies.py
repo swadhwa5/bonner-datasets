@@ -1,12 +1,11 @@
-from typing import List
+from typing import List, Mapping
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
 import xarray as xr
 
-from bonner.brainio.assembly import package
-
-from ..utils import load_nii
+from ...utils import load_nii
+from ...utils.brainio.assembly import package
 from .utils import (
     IDENTIFIER,
     N_SUBJECTS,
@@ -19,7 +18,7 @@ from .utils import (
 
 
 def package_assemblies(
-    catalog_name: str, location_type: str, location: str, **kwargs
+    catalog_name: str, location_type: str, location: str, **kwargs: Mapping[str, str]
 ) -> None:
     for subject in tqdm(range(N_SUBJECTS), desc="subject"):
         mask = _load_brain_mask(subject)
@@ -61,7 +60,6 @@ def package_assemblies(
             .dropna(dim="neuroid", how="any")
         )
         package(
-            identifier=f"{IDENTIFIER}-subject{subject}",
             assembly=assembly,
             catalog_name=catalog_name,
             location_type=location_type,

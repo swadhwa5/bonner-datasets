@@ -1,3 +1,4 @@
+from typing import Mapping
 from pathlib import Path
 import json
 import requests
@@ -5,7 +6,7 @@ import subprocess
 
 from tqdm import tqdm
 
-from ..utils import download_file, unzip_file
+from ...utils import download_file, unzip_file
 from .utils import (
     _FIGSHARE_API_BASE_URL,
     _FIGSHARE_BOLD5000_V1_ARTICLE_ID,
@@ -20,7 +21,7 @@ from .utils import (
 )
 
 
-def download_dataset(force_download: bool = False, **kwargs) -> None:
+def download_dataset(force_download: bool = False, **kwargs: Mapping[str, str]) -> None:
     # get URLs for all files in BOLD5000 Release 2 using figshare API (https://docs.figshare.com/#article_files)
     files = json.loads(
         requests.get(
