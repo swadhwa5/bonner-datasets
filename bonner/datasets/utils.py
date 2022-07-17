@@ -12,6 +12,8 @@ import uuid
 import nibabel as nib
 import xarray as xr
 
+DATASETS_HOME = Path(os.getenv("DATASETS_HOME", str(Path.home() / "brainio")))
+
 
 @contextmanager
 def working_directory(directory):
