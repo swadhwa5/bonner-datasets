@@ -12,8 +12,6 @@ import uuid
 import nibabel as nib
 import xarray as xr
 
-BRAINIO_HOME = Path(os.getenv("BRAINIO_HOME", str(Path.home() / "brainio")))
-
 
 @contextmanager
 def working_directory(directory):
@@ -141,7 +139,7 @@ def package(identifier: str, pipeline: Iterable[Callable]):
     parser.description = f"package the {identifier} dataset"
     args = parser.parse_args()
 
-    dir_cache = BRAINIO_HOME / ".cache" / identifier
+    dir_cache = DATASETS_HOME / ".cache" / identifier
     dir_cache.mkdir(parents=True, exist_ok=True)
 
     with working_directory(dir_cache):
