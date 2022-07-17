@@ -6,11 +6,26 @@ build-backend = "setuptools.build_meta"
 name = "bonner-datasets"
 description = "Bonner lab utilities for handling neural and image datasets"
 readme = "README.md"
-keywords = ["Bonner Lab", "datasets"]
-author = "Raj Magesh Gauthaman"
-author_email = "rgautha1@jh.edu"
-url = "https://github.com/raj-magesh/bonner-datasets"
-license = {text = "GNU General Public License v3.0"}
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Raj Magesh Gauthaman", email = "rgautha1@jh.edu"}
+]
+keywords = [
+    "Bonner Lab",
+    "neural datasets",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+    "Typing :: Typed",
+]
+urls = {repository = "https://github.com/raj-magesh/bonner-datasets"}
 dependencies = [
     "boto3",
     "numpy",
