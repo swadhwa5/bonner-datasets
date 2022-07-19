@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Mapping
 
 import numpy as np
 import pandas as pd
@@ -8,9 +8,9 @@ import xarray as xr
 import h5py
 import nibabel as nib
 from tqdm import tqdm
-from bonner.brainio.assembly import package
 
-from ..utils import load_nii
+from ...utils import load_nii
+from ...utils.brainio.assembly import package
 from .utils import (
     IDENTIFIER,
     N_SUBJECTS,
@@ -25,7 +25,7 @@ from .utils import (
 
 
 def package_assemblies(
-    catalog_name: str, location_type: str, location: str, **kwargs
+    catalog_name: str, location_type: str, location: str, **kwargs: Mapping[str, str]
 ) -> None:
     stimulus_ids = _extract_stimulus_ids()
 
@@ -87,7 +87,6 @@ def package_assemblies(
         )
 
         package(
-            identifier=f"{IDENTIFIER}-subject{subject}",
             assembly=assembly,
             catalog_name=catalog_name,
             location_type=location_type,
@@ -117,7 +116,9 @@ def _extract_stimulus_ids() -> xr.DataArray:
         ),
         dims=("subject", "session", "trial"),
     )
-    stimulus_ids.values[subject_ids, session_ids, intra_session_trial_ids] = _stimulus_ids
+    stimulus_ids.values[
+        subject_ids, session_ids, intra_session_trial_ids
+    ] = _stimulus_ids
     return stimulus_ids
 
 

@@ -1,5 +1,9 @@
 # Datasets
 
+## Environment variables
+
+`DATASETS_HOME`
+
 ## Things to do
 
 - TODO add default voxel selection to `bonner2021.object2vec` that matches what Mick was using

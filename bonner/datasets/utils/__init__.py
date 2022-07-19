@@ -105,6 +105,16 @@ def load_nii(filepath: Path, non_spatial_dim: int = -1) -> xr.DataArray:
     )
 
 
+def groupby_reset(
+    x: xr.DataArray, dim_groupby: str, dim_original_name: str
+) -> xr.DataArray:
+    return (
+        x.reset_index(list(x.indexes))
+        .rename({dim_groupby: dim_original_name})
+        .rename({f"{dim_groupby}_": dim_groupby})
+    )
+
+
 def package(identifier: str, pipeline: Iterable[Callable]) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
