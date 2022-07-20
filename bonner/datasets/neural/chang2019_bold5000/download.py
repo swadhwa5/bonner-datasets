@@ -1,16 +1,14 @@
 from typing import Mapping
 from pathlib import Path
-import json
-import requests
 import subprocess
 
 from tqdm import tqdm
 
+from utils.figshare import get_url_dict
 from ...utils import download_file, unzip_file
 from .utils import (
-    _FIGSHARE_API_BASE_URL,
-    _FIGSHARE_BOLD5000_V1_ARTICLE_ID,
-    _FIGSHARE_BOLD5000_V2_ARTICLE_ID,
+    FIGSHARE_ARTICLE_ID_V1,
+    FIGSHARE_ARTICLE_ID_V2,
     _URL_IMAGES,
     _S3_ROI_MASKS,
     N_SUBJECTS,
@@ -22,13 +20,7 @@ from .utils import (
 
 
 def download_dataset(force_download: bool = False, **kwargs: Mapping[str, str]) -> None:
-    # get URLs for all files in BOLD5000 Release 2 using figshare API (https://docs.figshare.com/#article_files)
-    files = json.loads(
-        requests.get(
-            f"{_FIGSHARE_API_BASE_URL}/articles/{_FIGSHARE_BOLD5000_V2_ARTICLE_ID}/files"
-        ).content
-    )
-    urls = {file["name"]: file["download_url"] for file in files}
+    urls = get_url_dict(FIGSHARE_ARTICLE_ID_V2)
 
     for subject in tqdm(range(N_SUBJECTS), desc="subject", leave=False):
         filenames = [
@@ -41,12 +33,7 @@ def download_dataset(force_download: bool = False, **kwargs: Mapping[str, str]) 
             filename = _get_betas_filename(subject, session)  # betas
             download_file(urls[filename], Path(filename), force=force_download)
 
-    files = json.loads(
-        requests.get(
-            f"{_FIGSHARE_API_BASE_URL}/articles/{_FIGSHARE_BOLD5000_V1_ARTICLE_ID}/files"
-        ).content
-    )
-    urls = {file["name"]: file["download_url"] for file in files}
+    urls = get_url_dict(FIGSHARE_ARTICLE_ID_V1)
     urls = {
         "BOLD5000_Structural.zip": urls["BOLD5000_Structural.zip"],
         "stimuli.zip": _URL_IMAGES,
