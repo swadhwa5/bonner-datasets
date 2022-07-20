@@ -1,7 +1,7 @@
 import pandas as pd
 import xarray as xr
 
-from bonner.brainio import BRAINIO_HOME, fetch, package_assembly
+from bonner.brainio import BONNER_BRAINIO_HOME, fetch, package_assembly
 
 
 def load(
@@ -51,7 +51,7 @@ def package(
     :type location: str
     """
     identifier = assembly.attrs["identifier"]
-    filepath = BRAINIO_HOME / catalog_name / f"{identifier}.nc"
+    filepath = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}.nc"
     assembly = assembly.to_dataset(name=identifier, promote_attrs=True)
     assembly.to_netcdf(filepath)
 

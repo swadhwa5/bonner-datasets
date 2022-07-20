@@ -12,7 +12,9 @@ import uuid
 import nibabel as nib
 import xarray as xr
 
-DATASETS_HOME = Path(os.getenv("DATASETS_HOME", str(Path.home() / "brainio")))
+BONNER_DATASETS_HOME = Path(
+    os.getenv("BONNER_DATASETS_HOME", str(Path.home() / "datasets"))
+)
 
 
 @contextmanager
@@ -155,7 +157,7 @@ def package(identifier: str, pipeline: Iterable[Callable]) -> None:
     parser.description = f"package the {identifier} dataset"
     args = parser.parse_args()
 
-    dir_cache = DATASETS_HOME / identifier
+    dir_cache = BONNER_DATASETS_HOME / identifier
     dir_cache.mkdir(parents=True, exist_ok=True)
 
     with working_directory(dir_cache):

@@ -5,7 +5,7 @@ import zipfile
 
 import pandas as pd
 
-from bonner.brainio import BRAINIO_HOME, fetch, package_stimulus_set
+from bonner.brainio import BONNER_BRAINIO_HOME, fetch, package_stimulus_set
 
 
 def load(
@@ -35,7 +35,7 @@ def load(
 
     csv = pd.read_csv(filepaths["csv"])
 
-    stimuli_dir = BRAINIO_HOME / catalog_name / f"{identifier}"
+    stimuli_dir = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}"
 
     if not all([(stimuli_dir / subpath).exists() for subpath in csv["filename"]]):
         if stimuli_dir.exists():
@@ -113,7 +113,7 @@ def _create_csv(
     :return: path to the CSV file
     :rtype: Path
     """
-    filepath = BRAINIO_HOME / catalog_name / f"{identifier}.csv"
+    filepath = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}.csv"
     filepath.parent.mkdir(parents=True, exist_ok=True)
     stimulus_set.to_csv(filepath, index=False)
     return filepath
@@ -139,7 +139,7 @@ def _create_zip(
     :return: path to the ZIP archive
     :rtype: Path
     """
-    filepath = BRAINIO_HOME / catalog_name / f"{identifier}.zip"
+    filepath = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}.zip"
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(filepath, "w") as zip:
         for filename in stimulus_set["filename"]:

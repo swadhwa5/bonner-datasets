@@ -2,7 +2,7 @@
 
 ## Environment variables
 
-`DATASETS_HOME`
+`BONNER_DATASETS_HOME`
 
 ## Things to do
 
