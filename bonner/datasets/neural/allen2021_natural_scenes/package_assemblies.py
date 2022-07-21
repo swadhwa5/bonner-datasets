@@ -1,6 +1,5 @@
 import itertools
 from pathlib import Path
-from typing import Dict, Tuple, Mapping
 
 import numpy as np
 import pandas as pd
@@ -25,7 +24,7 @@ from .utils import (
 
 
 def package_assemblies(
-    catalog_name: str, location_type: str, location: str, **kwargs: Mapping[str, str]
+    catalog_name: str, location_type: str, location: str, **kwargs: str
 ) -> None:
     stimulus_ids = _extract_stimulus_ids()
 
@@ -128,7 +127,7 @@ def _load_roi_mapping(
     roi_type: str,
     roi_group: str,
     hemisphere: str,
-) -> Tuple[np.ndarray, Dict]:
+) -> tuple[np.ndarray, dict[int, str]]:
     """Load a brain volume containing ROI integer labels and a mapping to string labels.
 
     :param subject: subject ID
@@ -140,7 +139,7 @@ def _load_roi_mapping(
     :param hemisphere: "lh" or "rh"
     :type hemisphere: str
     :return: integer-labelled brain volume with mapping to ROI names
-    :rtype: Tuple[np.ndarray, Dict]
+    :rtype: tuple[np.ndarray, dict[int, str]]
     """
     volume = nib.load(
         Path.cwd()

@@ -1,4 +1,3 @@
-from typing import Tuple, AbstractSet
 import functools
 from pathlib import Path
 
@@ -69,7 +68,7 @@ def load_assembly(
 
 def load_stimulus_set(
     catalog_name: str = "bonner-brainio", check_integrity: bool = True
-) -> Tuple[pd.DataFrame, Path]:
+) -> tuple[pd.DataFrame, Path]:
     return load_stimulus_set_(
         catalog_name=catalog_name,
         identifier=IDENTIFIER,
@@ -77,7 +76,7 @@ def load_stimulus_set(
     )
 
 
-def get_shared_stimulus_ids() -> AbstractSet[str]:
+def get_shared_stimulus_ids() -> set[str]:
     """Gets the IDs of the stimuli shared across all the participants in the experiment.
 
     :return: shared_stimulus_ids

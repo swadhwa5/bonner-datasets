@@ -1,4 +1,3 @@
-from typing import Mapping
 from pathlib import Path
 
 import pandas as pd
@@ -11,7 +10,7 @@ def package_stimulus_set(
     catalog_name: str,
     location_type: str,
     location: str,
-    **kwargs: Mapping[str, str],
+    **kwargs: str,
 ) -> None:
     parent_dir = Path("BOLD5000_Stimuli") / "Scene_Stimuli" / "Presented_Stimuli"
     image_paths = list(parent_dir.rglob("*.*"))

@@ -1,4 +1,3 @@
-from typing import Tuple
 from pathlib import Path
 from multiprocessing import Pool
 
@@ -68,11 +67,11 @@ def download_dataset(force_download: bool = False, **kwargs) -> None:
                 s3.download_fileobj(BUCKET_NAME, file, f)
 
 
-def _save_image(args: Tuple[Image.Image, Path]) -> None:
+def _save_image(args: tuple[Image.Image, Path]) -> None:
     """Save an image to a filepath.
 
     :param args: an image and the filepath it should be saved to
-    :type args: Tuple[Image.Image, Path]
+    :type args: tuple[Image.Image, Path]
     """
     image, filepath = args
     if not filepath.exists():

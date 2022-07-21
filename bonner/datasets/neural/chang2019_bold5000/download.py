@@ -1,4 +1,3 @@
-from typing import Mapping
 from pathlib import Path
 import subprocess
 
@@ -19,7 +18,7 @@ from .utils import (
 )
 
 
-def download_dataset(force_download: bool = False, **kwargs: Mapping[str, str]) -> None:
+def download_dataset(force_download: bool = False, **kwargs: str) -> None:
     urls = get_url_dict(FIGSHARE_ARTICLE_ID_V2)
 
     for subject in tqdm(range(N_SUBJECTS), desc="subject", leave=False):

@@ -1,4 +1,3 @@
-from typing import List, Mapping
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
@@ -18,7 +17,7 @@ from .utils import (
 
 
 def package_assemblies(
-    catalog_name: str, location_type: str, location: str, **kwargs: Mapping[str, str]
+    catalog_name: str, location_type: str, location: str, **kwargs: str
 ) -> None:
     for subject in tqdm(range(N_SUBJECTS), desc="subject"):
         mask = _load_brain_mask(subject)
@@ -111,7 +110,7 @@ def _load_structural_scan(subject: int) -> xr.DataArray:
     )
 
 
-def _load_image_filename_stems(subject: int) -> List:
+def _load_image_filename_stems(subject: int) -> list[Path]:
     with open(_get_imagenames_filename(subject), "r") as f:
         # strip newlines, extension
         return [Path(line[:-1]).stem for line in f.readlines()]

@@ -1,4 +1,3 @@
-from typing import Tuple
 from pathlib import Path
 import shutil
 import zipfile
@@ -10,7 +9,7 @@ from bonner.brainio import BONNER_BRAINIO_HOME, fetch, package_stimulus_set
 
 def load(
     catalog_name: str, identifier: str, check_integrity: bool = True
-) -> Tuple[pd.DataFrame, Path]:
+) -> tuple[pd.DataFrame, Path]:
     """Load a stimulus set from a catalog.
 
     :param catalog_name: name of the BrainIO catalog
@@ -20,7 +19,7 @@ def load(
     :param check_integrity: whether to check the SHA1 hash of the file, defaults to True
     :type check_integrity: bool, optional
     :return: the stimulus set metadata and the path to the stimuli
-    :rtype: Tuple[pd.DataFrame, Path]
+    :rtype: tuple[pd.DataFrame, Path]
     """
     filepaths = {
         filetype: fetch(

@@ -1,4 +1,3 @@
-from typing import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +9,7 @@ from ...utils.brainio.stimulus_set import package
 
 
 def package_stimulus_set(
-    catalog_name: str, location_type: str, location: str, **kwargs: Mapping[str, str]
+    catalog_name: str, location_type: str, location: str, **kwargs: str
 ) -> None:
     conditions = _load_conditions()
     metadata = {}
