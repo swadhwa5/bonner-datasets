@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "bonner-datasets"
 description = "Bonner lab utilities for handling neural and image datasets"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
     {name = "Raj Magesh Gauthaman", email = "rgautha1@jh.edu"}
