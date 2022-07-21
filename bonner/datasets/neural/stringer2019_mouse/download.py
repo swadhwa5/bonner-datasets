@@ -11,6 +11,5 @@ def download_dataset(force_download: bool = False, **kwargs) -> None:
     urls_data = {key: url for key, url in urls.items() if "natimg2800_M" in key}
     for filename, url in urls_data.items():
         download_file(url, filepath=Path(filename), force=force_download)
-    download_file(
-        urls["images_natimg2800_all.mat"], filepath=Path(filename), force=force_download
-    )
+    filename = "images_natimg2800_all.mat"
+    download_file(urls[filename], filepath=Path(filename), force=force_download)
