@@ -21,7 +21,6 @@ def download_dataset(force_download: bool = False, **kwargs) -> None:
     """Download the (1.8 mm)-resolution, GLMsingle preparation of the Natural Scenes Dataset.
 
     :param force: whether to force downloads even if files exist, defaults to False
-    :type force: bool, optional
     """
     files = [
         "nsddata_stimuli/stimuli/nsd/nsd_stimuli.hdf5",  # stimulus images
@@ -71,7 +70,6 @@ def _save_image(args: tuple[Image.Image, Path]) -> None:
     """Save an image to a filepath.
 
     :param args: an image and the filepath it should be saved to
-    :type args: tuple[Image.Image, Path]
     """
     image, filepath = args
     if not filepath.exists():
@@ -79,8 +77,6 @@ def _save_image(args: tuple[Image.Image, Path]) -> None:
 
 
 def save_images(**kwargs) -> None:
-    """Save HDF5-formatted image stimuli as PNG files."""
-
     stimuli = h5py.File(
         Path("nsddata_stimuli") / "stimuli" / "nsd" / "nsd_stimuli.hdf5", "r"
     )["imgBrick"]

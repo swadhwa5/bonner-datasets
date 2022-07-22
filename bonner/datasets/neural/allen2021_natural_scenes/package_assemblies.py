@@ -97,7 +97,6 @@ def _extract_stimulus_ids() -> xr.DataArray:
     """Extract and format image IDs for all trials.
 
     :return: stimulus_ids seen at each trial with "subject", "session" and "trial" dimensions
-    :rtype: xr.DataArray
     """
     metadata = load_stimulus_metadata()
     metadata = np.array(metadata.iloc[:, 17:])
@@ -131,15 +130,10 @@ def _load_roi_mapping(
     """Load a brain volume containing ROI integer labels and a mapping to string labels.
 
     :param subject: subject ID
-    :type subject: int
     :param roi_type: type of ROI, can be "surface" or "volume"
-    :type roi_type: str
     :param roi_group: ROI group label, listed in `ROIS.values()`
-    :type roi_group: str
     :param hemisphere: "lh" or "rh"
-    :type hemisphere: str
     :return: integer-labelled brain volume with mapping to ROI names
-    :rtype: tuple[np.ndarray, dict[int, str]]
     """
     volume = nib.load(
         Path.cwd()
@@ -179,9 +173,7 @@ def _format_roi_metadata(subject: int) -> pd.DataFrame:
     """Collate and format the metadata for all ROIs.
 
     :param subject: subject ID
-    :type subject: int
     :return: metadata for all ROIs
-    :rtype: pd.DataFrame
     """
     voxels = []
     roi_indices = {}
@@ -221,11 +213,8 @@ def _load_ncsnr(subject: int, *, split: int = None) -> xr.DataArray:
     """Load and format noise-ceiling signal-to-noise ratios (NCSNR).
 
     :param subject: subject ID
-    :type subject: int
     :param split: the ncsnr split used, can be `1`, `2`, or `None` (all), defaults to None
-    :type split: int, optional
     :return: linearized NCSNR data
-    :rtype: xr.DataArray
     """
     if split is None:
         suffix = ""
@@ -247,9 +236,7 @@ def _load_structural_scan(subject: int) -> xr.DataArray:
     """Load and format the structural scan registered to the functional data.
 
     :param subject: subject ID
-    :type subject: int
     :return: linearized structural scan
-    :rtype: xr.DataArray
     """
     return load_nii(
         Path.cwd()
@@ -265,9 +252,7 @@ def _load_brain_mask(subject: int) -> xr.DataArray:
     """Load and format a Boolean brain mask for the functional data.
 
     :param subject: subject ID
-    :type subject: int
     :return: linearized Boolean brain mask
-    :rtype: xr.DataArray
     """
     return load_nii(
         Path.cwd()
@@ -288,13 +273,9 @@ def _load_activations(
     """Load functional activations.
 
     :param subject: subject ID
-    :type subject: int
     :param session: session ID
-    :type session: int
     :param stimulus_ids: image IDs presented during the session
-    :type stimulus_ids: xr.DataArray
     :return: functional activations with "presentation" and "neuroid" dimensions
-    :rtype: xr.DataArray
     """
     activations = h5py.File(
         Path.cwd()

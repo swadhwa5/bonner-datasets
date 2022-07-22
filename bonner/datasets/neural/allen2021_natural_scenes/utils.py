@@ -44,7 +44,6 @@ def load_stimulus_metadata() -> pd.DataFrame:
     """Load and format stimulus metadata.
 
     :return: stimulus metadata
-    :rtype: pd.DataFrame
     """
     metadata = pd.read_csv(
         Path.cwd() / "nsddata" / "experiments" / "nsd" / "nsd_stim_info_merged.csv",
@@ -80,7 +79,6 @@ def get_shared_stimulus_ids() -> set[str]:
     """Gets the IDs of the stimuli shared across all the participants in the experiment.
 
     :return: shared_stimulus_ids
-    :rtype: Set
     """
     assemblies = {
         subject: load_assembly(subject=subject, check_integrity=False)
@@ -100,9 +98,7 @@ def average_across_reps(assembly: xr.DataArray) -> xr.DataArray:
     """Average NeuroidAssembly across repetitions of conditions.
 
     :param assembly: neural data
-    :type assembly: xr.DataArray
     :return: assembly with data averaged across repetitions along "stimulus_id" coordinate
-    :rtype: xr.DataArray
     """
     groupby = assembly.groupby("stimulus_id")
     assembly = groupby.mean(skipna=True, keep_attrs=True)
@@ -114,9 +110,7 @@ def compute_nc(assembly: xr.DataArray) -> np.ndarray:
     """Compute the noise ceiling for a subject's fMRI data using the method described in the NSD Data Manual (https://cvnlab.slite.com/p/channel/CPyFRAyDYpxdkPK6YbB5R1/notes/6CusMRYfk0) under the "Conversion of ncsnr to noise ceiling percentages" section.
 
     :param assembly: neural data
-    :type assembly: xr.DataArray
     :return: noise ceilings for all voxels
-    :rtype: np.ndarray
     """
     ncsnr = assembly["ncsnr"].values
     groupby = assembly.groupby("stimulus_id")

@@ -13,13 +13,9 @@ def load(
     """Load a BrainIO assembly from a catalog as a DataArray.
 
     :param catalog_name: name of the BrainIO catalog
-    :type catalog_name: str
     :param identifier: identifier of the assembly, as defined in the BrainIO specification
-    :type identifier: str
     :param check_integrity: whether to check the SHA1 hash of the file, defaults to True
-    :type check_integrity: bool, optional
     :return: the BrainIO assembly
-    :rtype: xr.DataArray
     """
     filepath = fetch(
         catalog_name=catalog_name,
@@ -42,13 +38,9 @@ def package(
     """Package a DataArray as a BrainIO assembly.
 
     :param assembly: the DataArray
-    :type assembly: xr.DataArray
     :param catalog_name: name of the BrainIO catalog
-    :type catalog_name: str
     :param location_type: location_type of the assembly, as defined in the BrainIO specification
-    :type location_type: str
     :param location: location of the assembly, as defined in the BrainIO specification
-    :type location: str
     """
     identifier = assembly.attrs["identifier"]
     filepath = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}.nc"
@@ -68,11 +60,8 @@ def merge(assembly: xr.DataArray, stimulus_set: pd.DataFrame) -> xr.DataArray:
     """Merge the metadata columns from a stimulus set into an assembly.
 
     :param assembly: the BrainIO assembly
-    :type assembly: xr.DataArray
     :param stimulus_set: the BrainIO stimulus set
-    :type stimulus_set: pd.DataFrame
     :return: the updated BrainIO assembly
-    :rtype: xr.DataArray
     """
     assembly = assembly.load()
     stimulus_set = stimulus_set.loc[

@@ -13,13 +13,9 @@ def load(
     """Load a stimulus set from a catalog.
 
     :param catalog_name: name of the BrainIO catalog
-    :type catalog_name: str
     :param identifier: identifier of the stimulus set, as defined in the BrainIO specification
-    :type identifier: str
     :param check_integrity: whether to check the SHA1 hash of the file, defaults to True
-    :type check_integrity: bool, optional
     :return: the stimulus set metadata and the path to the stimuli
-    :rtype: tuple[pd.DataFrame, Path]
     """
     filepaths = {
         filetype: fetch(
@@ -58,17 +54,11 @@ def package(
     """Package a stimulus set.
 
     :param identifier: identifier of the stimulus set, as defined in the BrainIO specification
-    :type identifier: str
     :param stimulus_set: stimulus set metadata
-    :type stimulus_set: pd.DataFrame
     :param stimulus_dir: directory containing the stimuli
-    :type stimulus_dir: Path
     :param catalog_name: name of the BrainIO catalog
-    :type catalog_name: str
     :param location_type: location_type of the stimulus set, as defined in the BrainIO specification
-    :type location_type: str
     :param location: location of the stimulus set, as defined in the BrainIO specification
-    :type location: str
     """
 
     filepaths = {
@@ -104,13 +94,9 @@ def _create_csv(
     """Creates a CSV file of the stimulus set metadata.
 
     :param identifier: identifier of the stimulus set, as defined in the BrainIO specification
-    :type identifier: str
     :param stimulus_set: the stimulus set metadata
-    :type stimulus_set: pd.DataFrame
     :param catalog_name: name of the BrainIO catalog
-    :type catalog_name: str
     :return: path to the CSV file
-    :rtype: Path
     """
     filepath = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}.csv"
     filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -128,15 +114,10 @@ def _create_zip(
     """Creates a ZIP archive of the stimulus set stimuli.
 
     :param identifier: identifier of the stimulus set, as defined in the BrainIO specification
-    :type identifier: str
     :param stimulus_set: the stimulus set metadata
-    :type stimulus_set: pd.DataFrame
     :param stimulus_dir: directory containing the stimuli
-    :type stimulus_dir: Path
     :param catalog_name: name of the BrainIO catalog
-    :type catalog_name: str
     :return: path to the ZIP archive
-    :rtype: Path
     """
     filepath = BONNER_BRAINIO_HOME / catalog_name / f"{identifier}.zip"
     filepath.parent.mkdir(parents=True, exist_ok=True)

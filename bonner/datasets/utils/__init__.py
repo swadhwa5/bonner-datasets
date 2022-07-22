@@ -77,11 +77,8 @@ def load_nii(filepath: Path, non_spatial_dim: int = -1) -> xr.DataArray:
     """Format an NII file as a DataArray.
 
     :param filepath: path to NII file [must be a 3D array (x, y, z) or 4D array (presentation, x, y, z)]
-    :type filepath: Path
     :param non_spatial_dim: index of presentation dimension: if -1, assumed to be last dimension, else first
-    :type non_spatial_dim: int
     :return: linearized brain volume with a "neuroid" dimension
-    :rtype: xr.DataArray
     """
     nii = nib.load(filepath).get_fdata()
 

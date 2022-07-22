@@ -22,9 +22,7 @@ def create_assembly(subject: int) -> xr.DataArray:
     """Load and format functional activations.
 
     :param subject: subject ID
-    :type subject: int
     :return: functional activations with "presentation" and "neuroid" dimensions
-    :rtype: xr.DataArray
     """
     activations = loadmat(_FILENAMES["activations"][subject], simplify_cells=True)[
         "betas"
