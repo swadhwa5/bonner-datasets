@@ -1,7 +1,11 @@
+import os
+
 import pandas as pd
 import xarray as xr
 
-from bonner.brainio import BONNER_BRAINIO_HOME, fetch, package_assembly
+from bonner.brainio import fetch, package_assembly
+
+BONNER_BRAINIO_HOME = os.getenv("BONNER_BRAINIO_HOME")
 
 
 def load(

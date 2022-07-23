@@ -1,10 +1,13 @@
+import os
 from pathlib import Path
 import shutil
 import zipfile
 
 import pandas as pd
 
-from bonner.brainio import BONNER_BRAINIO_HOME, fetch, package_stimulus_set
+from bonner.brainio import fetch, package_stimulus_set
+
+BONNER_BRAINIO_HOME = Path(os.getenv("BONNER_BRAINIO_HOME"))
 
 
 def load(
