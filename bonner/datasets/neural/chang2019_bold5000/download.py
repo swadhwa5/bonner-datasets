@@ -3,7 +3,7 @@ import subprocess
 
 from tqdm import tqdm
 
-from utils.figshare import get_url_dict
+from bonner.datasets._figshare import get_url_dict
 from ...utils import download_file, unzip_file
 from .utils import (
     FIGSHARE_ARTICLE_ID_V1,

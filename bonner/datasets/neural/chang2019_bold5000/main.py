@@ -1,4 +1,4 @@
-from bonner.datasets.utils import package
+from scripts import package
 from bonner.datasets.neural.chang2019_bold5000.utils import IDENTIFIER
 from bonner.datasets.neural.chang2019_bold5000.download import download_dataset
 from bonner.datasets.neural.chang2019_bold5000.package_stimulus_set import (

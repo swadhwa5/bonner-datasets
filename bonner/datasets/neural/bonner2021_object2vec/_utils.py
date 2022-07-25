@@ -17,7 +17,7 @@ ROIS = {
     "EBA": "faces",
 }
 
-_URLS = {
+URLS = {
     "stimuli": "https://osf.io/g74ar/download",
     "conditions": "https://osf.io/8eu5h/download",  # dropbox://object_associations_follow_ups/analyses/betas007/subj00{1, 2, 3, 4}/stacked_means.mat
     "activations": (  # dropbox://object_associations_follow_ups/analyses/betas005/subj00{1, 2, 3, 4}/betas.mat
@@ -72,7 +72,7 @@ _URLS = {
     },
 }
 
-_FILENAMES = {
+FILENAMES = {
     "stimuli": "stimuli.zip",
     "conditions": "conditions.mat",
     "activations": [f"betas_subj{subject}.mat" for subject in range(N_SUBJECTS)],
@@ -90,5 +90,5 @@ _FILENAMES = {
 }
 
 
-def _load_conditions() -> np.ndarray:
-    return loadmat(_FILENAMES["conditions"], simplify_cells=True)["stacked"]["conds"]
+def load_conditions() -> np.ndarray:
+    return loadmat(FILENAMES["conditions"], simplify_cells=True)["stacked"]["conds"]

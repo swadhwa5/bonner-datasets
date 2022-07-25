@@ -1,4 +1,4 @@
-from bonner.datasets.utils import package
+from scripts import package
 from bonner.datasets.neural.allen2021_natural_scenes.utils import IDENTIFIER
 from bonner.datasets.neural.allen2021_natural_scenes.download import (
     download_dataset,

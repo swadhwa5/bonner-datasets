@@ -1,4 +1,4 @@
-from bonner.datasets.utils import package
+from scripts import package
 from bonner.datasets.neural.stringer2019_mouse.download import download_dataset
 from bonner.datasets.neural.stringer2019_mouse.utils import IDENTIFIER
 

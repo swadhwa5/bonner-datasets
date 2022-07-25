@@ -1,9 +1,6 @@
-from typing import Generator, Iterable, Callable
-import argparse
 from contextlib import contextmanager
 import os
 from pathlib import Path
-import shutil
 import zipfile
 import tarfile
 import requests
@@ -11,10 +8,6 @@ import uuid
 
 import nibabel as nib
 import xarray as xr
-
-BONNER_DATASETS_HOME = Path(
-    os.getenv("BONNER_DATASETS_HOME", str(Path.home() / "datasets"))
-)
 
 
 @contextmanager
@@ -112,54 +105,3 @@ def groupby_reset(
         .rename({dim_groupby: dim_original_name})
         .rename({f"{dim_groupby}_": dim_groupby})
     )
-
-
-def package(identifier: str, pipeline: Iterable[Callable]) -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-n",
-        "--catalog-name",
-        type=str,
-        default="bonner-brainio",
-        help="BrainIO catalog name",
-    )
-    parser.add_argument(
-        "-t",
-        "--location-type",
-        type=str,
-        default="rsync",
-        help="rsync or S3",
-    )
-    parser.add_argument(
-        "-l",
-        "--location",
-        type=str,
-        default="cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-brainio",
-        help="URL to remote directory",
-    )
-    parser.add_argument(
-        "-c",
-        "--clear-cache",
-        type=bool,
-        default=False,
-        help="whether to delete cached files on exit",
-    )
-    parser.add_argument(
-        "-f",
-        "--force-download",
-        type=bool,
-        default=False,
-        help="whether to re-download existing cached files",
-    )
-    parser.description = f"package the {identifier} dataset"
-    args = parser.parse_args()
-
-    dir_cache = BONNER_DATASETS_HOME / identifier
-    dir_cache.mkdir(parents=True, exist_ok=True)
-
-    with working_directory(dir_cache):
-        for pipe in pipeline:
-            pipe(**vars(args))
-
-    if args.clear_cache:
-        shutil.rmtree(dir_cache)
