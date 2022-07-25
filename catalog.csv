@@ -1,0 +1,3 @@
+identifier,lookup_type,sha1,location_type,location,stimulus_set_identifier,class
+bonner2021.object2vec,stimulus_set,ac585c15cc9f986dabb0ec1b882df11de481221a,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/bonner2021.object2vec.zip,,
+bonner2021.object2vec,stimulus_set,cf8d63af2f1f5e9d9113316e9953506cce13c02b,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/bonner2021.object2vec.csv,,
