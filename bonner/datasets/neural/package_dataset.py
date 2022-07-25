@@ -112,6 +112,7 @@ def package_neural_dataset(
     module = import_module(f"bonner.datasets.neural.{identifier}")
     package_fn = getattr(module, "package")
     identifier = getattr(module, "IDENTIFIER")
+
     cache_directory = cache_directory / identifier
     cache_directory.mkdir(parents=True, exist_ok=True)
 
@@ -121,4 +122,10 @@ def package_neural_dataset(
         location=location,
         location_type=location_type,
         force_download=force_download,
+    )
+
+
+if __name__ == "__main__":
+    package_neural_dataset.callback(
+        identifier="bonner2021_object2vec",
     )
