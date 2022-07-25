@@ -84,7 +84,6 @@ BONNER_DATASETS_LOCATION = os.getenv("BONNER_DATASETS_LOCATION")
 )
 def package_neural_dataset(
     identifier: str,
-    catalog: Catalog,
     catalog_identifier: Path = BONNER_DATASETS_CATALOG_IDENTIFIER,
     catalog_csv_path: Path = BONNER_DATASETS_CATALOG_CSV_PATH,
     catalog_cache_directory: Path = BONNER_DATASETS_CATALOG_CACHE_DIRECTORY,
