@@ -8,9 +8,8 @@ import h5py
 import nibabel as nib
 from tqdm import tqdm
 
-from ...utils import load_nii
-from ...utils.brainio.assembly import package
-from .utils import (
+from .._utils import load_nii
+from ._utils import (
     IDENTIFIER,
     N_SUBJECTS,
     ROIS,
@@ -19,78 +18,70 @@ from .utils import (
     N_MAX_SESSIONS,
     N_TRIALS_PER_SESSION,
     format_stimulus_id,
-    load_stimulus_metadata,
+    _load_stimulus_metadata,
 )
 
 
-def package_assemblies(
-    catalog_name: str, location_type: str, location: str, **kwargs: str
-) -> None:
+def create_data_assembly(subject: int) -> xr.DataArray:
     stimulus_ids = _extract_stimulus_ids()
 
-    for subject in range(N_SUBJECTS):
-        mask = _load_brain_mask(subject)
-        neuroid_metadata = _format_roi_metadata(subject)[mask.values]
+    mask = _load_brain_mask(subject)
+    neuroid_metadata = _format_roi_metadata(subject)[mask.values]
 
-        assembly = (
-            xr.concat(
-                [
-                    _load_activations(
-                        subject=subject,
-                        session=session,
-                        stimulus_ids=stimulus_ids[subject, session, :],
-                    ).sel({"neuroid": mask})
-                    for session in tqdm(
-                        # TODO remove N_SESSIONS_HELD_OUT all data are released
-                        range(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
-                        desc="session",
-                    )
-                ],
-                dim="presentation",
-            )
-            .rename(f"{IDENTIFIER}-subject{subject}")
-            .assign_coords(
-                {
-                    "ncsnr": (
-                        "neuroid",
-                        _load_ncsnr(subject).sel({"neuroid": mask}).data,
-                    ),
-                    "ncsnr_split1": (
-                        "neuroid",
-                        _load_ncsnr(subject, split=1).sel({"neuroid": mask}).data,
-                    ),
-                    "ncsnr_split2": (
-                        "neuroid",
-                        _load_ncsnr(subject, split=2).sel({"neuroid": mask}).data,
-                    ),
-                }
-            )
-            .assign_coords(
-                {
-                    coord: ("neuroid", series.values)
-                    for coord, series in neuroid_metadata.iteritems()
-                }
-            )
-            .assign_attrs(
-                {
-                    "resolution": "1.8 mm",
-                    "preprocessing": "GLMsingle",
-                    "brain_dimensions": mask.attrs["brain_dimensions"],
-                    "structural_scan": _load_structural_scan(subject)
-                    .sel({"neuroid": mask})
-                    .data,
-                    "identifier": f"{IDENTIFIER}-subject{subject}",
-                    "stimulus_set_identifier": IDENTIFIER,
-                }
-            )
+    assembly = (
+        xr.concat(
+            [
+                _load_activations(
+                    subject=subject,
+                    session=session,
+                    stimulus_ids=stimulus_ids[subject, session, :],
+                ).sel({"neuroid": mask})
+                for session in tqdm(
+                    # TODO remove N_SESSIONS_HELD_OUT all data are released
+                    range(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
+                    desc="session",
+                )
+            ],
+            dim="presentation",
         )
+        .rename(f"{IDENTIFIER}-subject{subject}")
+        .assign_coords(
+            {
+                "ncsnr": (
+                    "neuroid",
+                    _load_ncsnr(subject).sel({"neuroid": mask}).data,
+                ),
+                "ncsnr_split1": (
+                    "neuroid",
+                    _load_ncsnr(subject, split=1).sel({"neuroid": mask}).data,
+                ),
+                "ncsnr_split2": (
+                    "neuroid",
+                    _load_ncsnr(subject, split=2).sel({"neuroid": mask}).data,
+                ),
+            }
+        )
+        .assign_coords(
+            {
+                coord: ("neuroid", series.values)
+                for coord, series in neuroid_metadata.iteritems()
+            }
+        )
+        .assign_attrs(
+            {
+                "resolution": "1.8 mm",
+                "preprocessing": "GLMsingle",
+                "brain_dimensions": mask.attrs["brain_dimensions"],
+                "structural_scan": _load_structural_scan(subject)
+                .sel({"neuroid": mask})
+                .data,
+                "identifier": f"{IDENTIFIER}-subject{subject}",
+                "stimulus_set_identifier": IDENTIFIER,
+            }
+        )
+    )
 
-        package(
-            assembly=assembly,
-            catalog_name=catalog_name,
-            location_type=location_type,
-            location=location,
-        )
+    return assembly
 
 
 def _extract_stimulus_ids() -> xr.DataArray:
@@ -98,7 +89,7 @@ def _extract_stimulus_ids() -> xr.DataArray:
 
     :return: stimulus_ids seen at each trial with "subject", "session" and "trial" dimensions
     """
-    metadata = load_stimulus_metadata()
+    metadata = _load_stimulus_metadata()
     metadata = np.array(metadata.iloc[:, 17:])
     indices = np.nonzero(metadata)
     trials = metadata[indices[0], indices[1]] - 1  # fix 1-indexing

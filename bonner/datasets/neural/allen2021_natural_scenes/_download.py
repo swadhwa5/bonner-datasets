@@ -6,7 +6,7 @@ import boto3
 import h5py
 from PIL import Image
 
-from .utils import (
+from ._utils import (
     N_SUBJECTS,
     ROIS,
     N_SESSIONS,
@@ -17,7 +17,7 @@ from .utils import (
 )
 
 
-def download_dataset(force_download: bool = False, **kwargs) -> None:
+def download_dataset(force_download: bool) -> None:
     """Download the (1.8 mm)-resolution, GLMsingle preparation of the Natural Scenes Dataset.
 
     :param force: whether to force downloads even if files exist, defaults to False
@@ -76,7 +76,7 @@ def _save_image(args: tuple[Image.Image, Path]) -> None:
         image.save(filepath)
 
 
-def save_images(**kwargs) -> None:
+def save_images() -> None:
     stimuli = h5py.File(
         Path("nsddata_stimuli") / "stimuli" / "nsd" / "nsd_stimuli.hdf5", "r"
     )["imgBrick"]

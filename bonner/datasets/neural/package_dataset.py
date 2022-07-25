@@ -12,7 +12,7 @@ from bonner.datasets.neural._utils import working_directory
 @click.option(
     "-c",
     "--catalog-identifier",
-    envvar="BONNER_DATASETS_CATALOG",
+    envvar="BONNER_DATASETS_CATALOG_IDENTIFIER",
     show_envvar=True,
     help="identifier of the BrainIO Catalog",
 )

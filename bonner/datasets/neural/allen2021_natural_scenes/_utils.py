@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from ...utils.brainio.assembly import load as load_assembly_
-from ...utils.brainio.stimulus_set import load as load_stimulus_set_
-from ...utils import groupby_reset
+from .._utils import groupby_reset
 
 IDENTIFIER = "allen2021.natural-scenes"
 
@@ -55,43 +53,18 @@ def load_stimulus_metadata() -> pd.DataFrame:
     return metadata
 
 
-def load_assembly(
-    subject: int, catalog_name: str = "bonner-brainio", check_integrity: bool = True
-) -> xr.DataArray:
-    return load_assembly_(
-        catalog_name=catalog_name,
-        identifier=f"{IDENTIFIER}-subject{subject}",
-        check_integrity=check_integrity,
-    )
-
-
-def load_stimulus_set(
-    catalog_name: str = "bonner-brainio", check_integrity: bool = True
-) -> tuple[pd.DataFrame, Path]:
-    return load_stimulus_set_(
-        catalog_name=catalog_name,
-        identifier=IDENTIFIER,
-        check_integrity=check_integrity,
-    )
-
-
-def get_shared_stimulus_ids() -> set[str]:
+def get_shared_stimulus_ids(assemblies: dict[int, xr.DataArray]) -> set[str]:
     """Gets the IDs of the stimuli shared across all the participants in the experiment.
 
     :return: shared_stimulus_ids
     """
-    assemblies = {
-        subject: load_assembly(subject=subject, check_integrity=False)
-        for subject in range(N_SUBJECTS)
-    }
-    shared_stimulus_ids = functools.reduce(
+    return functools.reduce(
         lambda x, y: x & y,
         [
             set(assemblies[subject]["stimulus_id"].values)
             for subject in range(N_SUBJECTS)
         ],
     )
-    return shared_stimulus_ids
 
 
 def average_across_reps(assembly: xr.DataArray) -> xr.DataArray:
