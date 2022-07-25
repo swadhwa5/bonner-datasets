@@ -20,7 +20,7 @@ from bonner.datasets.neural._utils import working_directory
     "-d",
     "--cache-directory",
     envvar="BONNER_DATASETS_CACHE",
-    default=Path.home() / "datasets",
+    default=Path.home() / ".cache" / "bonner-datasets",
     show_default=True,
     show_envvar=True,
     help="cache directory for downloaded files",
