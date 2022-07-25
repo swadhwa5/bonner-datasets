@@ -77,7 +77,6 @@ def package_stimulus_set(
     catalog: Catalog,
     identifier: str,
     stimulus_set: pd.DataFrame,
-    stimulus_dir: Path,
     location_type: str,
     location: str,
     class_csv: str,

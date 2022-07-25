@@ -18,16 +18,12 @@ def package_stimulus_set(
         {
             "stimulus_id": [path.stem for path in image_paths],
             "dataset": [path.parent.name for path in image_paths],
-            "filename": [
-                str(path.relative_to(parent_dir))
-                for path in image_paths
-            ],
+            "filename": [str(path.relative_to(parent_dir)) for path in image_paths],
         }
     )
     package(
         identifier=IDENTIFIER,
         stimulus_set=stimulus_set,
-        stimulus_dir=parent_dir,
         catalog_name=catalog_name,
         location_type=location_type,
         location=location,

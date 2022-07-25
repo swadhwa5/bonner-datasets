@@ -18,7 +18,7 @@ from ._utils import (
     N_MAX_SESSIONS,
     N_TRIALS_PER_SESSION,
     format_stimulus_id,
-    _load_stimulus_metadata,
+    load_stimulus_metadata,
 )
 
 
@@ -89,7 +89,7 @@ def _extract_stimulus_ids() -> xr.DataArray:
 
     :return: stimulus_ids seen at each trial with "subject", "session" and "trial" dimensions
     """
-    metadata = _load_stimulus_metadata()
+    metadata = load_stimulus_metadata()
     metadata = np.array(metadata.iloc[:, 17:])
     indices = np.nonzero(metadata)
     trials = metadata[indices[0], indices[1]] - 1  # fix 1-indexing

@@ -126,5 +126,5 @@ def package_neural_dataset(
 
 if __name__ == "__main__":
     package_neural_dataset.callback(
-        identifier="bonner2021_object2vec",
+        identifier="allen2021_natural_scenes",
     )

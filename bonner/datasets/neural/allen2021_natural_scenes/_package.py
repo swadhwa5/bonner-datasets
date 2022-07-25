@@ -23,7 +23,6 @@ def package(
         catalog=catalog,
         identifier=IDENTIFIER,
         stimulus_set=stimulus_set,
-        stimulus_dir=Path("images"),
         location_type=location_type,
         location=location,
         class_csv="",
