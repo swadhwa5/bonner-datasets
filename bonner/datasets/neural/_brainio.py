@@ -89,7 +89,7 @@ def package_stimulus_set(
     path_zip = catalog.cache_directory / f"{identifier}.zip"
     with zipfile.ZipFile(path_zip, "w") as zip:
         for filename in stimulus_set["filename"]:
-            zip.write(stimulus_dir / filename, arcname=filename)
+            zip.write(filename, arcname=filename)
 
     catalog.package_stimulus_set(
         identifier=identifier,
