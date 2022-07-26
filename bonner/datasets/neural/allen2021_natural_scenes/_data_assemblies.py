@@ -35,10 +35,10 @@ def create_data_assembly(subject: int) -> xr.DataArray:
                     subject=subject,
                     session=session,
                     stimulus_ids=stimulus_ids[subject, session, :],
-                ).sel({"neuroid": mask})
+                ).isel({"neuroid": mask})
                 for session in tqdm(
                     # TODO remove N_SESSIONS_HELD_OUT all data are released
-                    range(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
+                    range(2),  # N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
                     desc="session",
                 )
             ],
@@ -49,15 +49,15 @@ def create_data_assembly(subject: int) -> xr.DataArray:
             {
                 "ncsnr": (
                     "neuroid",
-                    _load_ncsnr(subject).sel({"neuroid": mask}).data,
+                    _load_ncsnr(subject).isel({"neuroid": mask}).data,
                 ),
                 "ncsnr_split1": (
                     "neuroid",
-                    _load_ncsnr(subject, split=1).sel({"neuroid": mask}).data,
+                    _load_ncsnr(subject, split=1).isel({"neuroid": mask}).data,
                 ),
                 "ncsnr_split2": (
                     "neuroid",
-                    _load_ncsnr(subject, split=2).sel({"neuroid": mask}).data,
+                    _load_ncsnr(subject, split=2).isel({"neuroid": mask}).data,
                 ),
             }
         )
@@ -73,7 +73,7 @@ def create_data_assembly(subject: int) -> xr.DataArray:
                 "preprocessing": "GLMsingle",
                 "brain_dimensions": mask.attrs["brain_dimensions"],
                 "structural_scan": _load_structural_scan(subject)
-                .sel({"neuroid": mask})
+                .isel({"neuroid": mask})
                 .data,
                 "identifier": f"{IDENTIFIER}-subject{subject}",
                 "stimulus_set_identifier": IDENTIFIER,
@@ -81,7 +81,7 @@ def create_data_assembly(subject: int) -> xr.DataArray:
         )
     )
 
-    return assembly
+    return assembly.drop_vars("neuroid")
 
 
 def _extract_stimulus_ids() -> xr.DataArray:

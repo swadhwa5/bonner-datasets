@@ -16,18 +16,19 @@ def package(
     location: str,
     force_download: bool,
 ) -> None:
-    download_dataset(force_download=force_download)
-    save_images()
-    stimulus_set = create_stimulus_set()
-    package_stimulus_set(
-        catalog=catalog,
-        identifier=IDENTIFIER,
-        stimulus_set=stimulus_set,
-        location_type=location_type,
-        location=location,
-        class_csv="",
-        class_zip="",
-    )
+    # TODO uncomment this once fully packaged
+    # download_dataset(force_download=force_download)
+    # save_images()
+    # stimulus_set = create_stimulus_set()
+    # package_stimulus_set(
+    #     catalog=catalog,
+    #     identifier=IDENTIFIER,
+    #     stimulus_set=stimulus_set,
+    #     location_type=location_type,
+    #     location=location,
+    #     class_csv="",
+    #     class_zip="",
+    # )
 
     for subject in range(N_SUBJECTS):
         assembly = create_data_assembly(subject)

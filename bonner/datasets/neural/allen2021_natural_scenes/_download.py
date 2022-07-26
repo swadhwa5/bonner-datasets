@@ -66,16 +66,6 @@ def download_dataset(force_download: bool) -> None:
                 s3.download_fileobj(BUCKET_NAME, file, f)
 
 
-def _save_image(args: tuple[Image.Image, Path]) -> None:
-    """Save an image to a filepath.
-
-    :param args: an image and the filepath it should be saved to
-    """
-    image, filepath = args
-    if not filepath.exists():
-        image.save(filepath)
-
-
 def save_images() -> None:
     stimuli = h5py.File(
         Path("nsddata_stimuli") / "stimuli" / "nsd" / "nsd_stimuli.hdf5", "r"
@@ -90,15 +80,6 @@ def save_images() -> None:
         Image.fromarray(stimuli[stimulus, :, :, :])
         for stimulus in range(stimuli.shape[0])
     )
-    with Pool() as pool:
-        list(
-            pool.imap(
-                _save_image,
-                tqdm(
-                    zip(images, image_paths),
-                    total=len(image_paths),
-                    desc="images",
-                ),
-                chunksize=1000,
-            ),
-        )
+    for image, image_path in tqdm(zip(images, image_paths), desc="image", leave=False):
+        if not image_path.exists():
+            image.save(image_path)
