@@ -86,7 +86,7 @@ def compute_nc(assembly: xr.DataArray) -> np.ndarray:
     :return: noise ceilings for all voxels
     """
     ncsnr = assembly["ncsnr"].values
-    groupby = assembly.groupby("stimulus_id")
+    groupby = assembly["stimulus_id"].groupby("stimulus_id")
 
     counts = np.array([len(reps) for reps in groupby.groups.values()])
 
