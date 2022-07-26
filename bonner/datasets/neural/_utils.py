@@ -103,5 +103,6 @@ def groupby_reset(
     return (
         x.reset_index(list(x.indexes))
         .rename({dim_groupby: dim_original_name})
-        .rename({f"{dim_groupby}_": dim_groupby})
+        .assign_coords({dim_groupby: (dim_original_name, x[dim_groupby].values)})
+        .drop(dim_original_name)
     )
