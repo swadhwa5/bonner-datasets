@@ -10,16 +10,6 @@ import nibabel as nib
 import xarray as xr
 
 
-@contextmanager
-def working_directory(directory: Path):
-    owd = os.getcwd()
-    try:
-        os.chdir(directory)
-        yield directory
-    finally:
-        os.chdir(owd)
-
-
 def download_file(
     url: str,
     filepath: Path = None,
@@ -104,5 +94,5 @@ def groupby_reset(
         x.reset_index(list(x.indexes))
         .rename({dim_groupby: dim_original_name})
         .assign_coords({dim_groupby: (dim_original_name, x[dim_groupby].values)})
-        .drop(dim_original_name)
+        .drop_vars(dim_original_name)
     )
