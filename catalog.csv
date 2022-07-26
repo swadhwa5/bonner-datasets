@@ -7,3 +7,4 @@ bonner2021.object2vec-subject2,assembly,e9993856b30f8fb0a693d489e577e03af965f663
 bonner2021.object2vec-subject3,assembly,2203c1ffb21b75104357245793c8afc9d9c91b04,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/bonner2021.object2vec-subject3.nc,bonner2021.object2vec,
 allen2021.natural-scenes,stimulus_set,f2155ff8b90994157897746a2298c11968f7fac4,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural-scenes.csv,,
 allen2021.natural-scenes,stimulus_set,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c9,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural-scenes.zip,,
+allen2021.natural-scenes-subject0,assembly,e0a8c4464eb0b8a263c63e8d19acd112f3557905,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural-scenes-subject0.nc,allen2021.natural-scenes,

@@ -30,7 +30,7 @@ def package(
     #     class_zip="",
     # )
 
-    for subject in range(N_SUBJECTS):
+    for subject in range(1, N_SUBJECTS):  # TODO change back when done
         assembly = create_data_assembly(subject)
         package_data_assembly(
             catalog=catalog,

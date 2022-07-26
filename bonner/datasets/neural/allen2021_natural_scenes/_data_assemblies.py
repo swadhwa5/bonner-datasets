@@ -38,7 +38,7 @@ def create_data_assembly(subject: int) -> xr.DataArray:
                 ).isel({"neuroid": mask})
                 for session in tqdm(
                     # TODO remove N_SESSIONS_HELD_OUT all data are released
-                    range(2),  # N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
+                    range(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
                     desc="session",
                 )
             ],
