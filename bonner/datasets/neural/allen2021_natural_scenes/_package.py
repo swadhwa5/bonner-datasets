@@ -31,11 +31,20 @@ def package(
     # )
 
     for subject in range(1, N_SUBJECTS):  # TODO change back when done
-        assembly = create_data_assembly(subject)
-        package_data_assembly(
-            catalog=catalog,
-            assembly=assembly,
+        # TODO delete this and uncomment next paragraph
+        path = catalog.cache_directory / f"{IDENTIFIER}-subject{subject}.nc"
+        catalog.package_data_assembly(
+            path=path,
             location_type=location_type,
-            location=location,
+            location=f"{location}/{path.name}",
             class_="",
         )
+
+        # assembly = create_data_assembly(subject)
+        # package_data_assembly(
+        #     catalog=catalog,
+        #     assembly=assembly,
+        #     location_type=location_type,
+        #     location=location,
+        #     class_="",
+        # )

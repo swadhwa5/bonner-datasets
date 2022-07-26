@@ -37,13 +37,12 @@ def package_data_assembly(
     assembly = assembly.to_dataset(name=identifier, promote_attrs=True)
     assembly.to_netcdf(path)
 
-    # TODO rsync these manually
-    # catalog.package_data_assembly(
-    #     path=path,
-    #     location_type=location_type,
-    #     location=f"{location}/{path.name}",
-    #     class_=class_,
-    # )
+    catalog.package_data_assembly(
+        path=path,
+        location_type=location_type,
+        location=f"{location}/{path.name}",
+        class_=class_,
+    )
 
 
 def load_stimulus_set(
