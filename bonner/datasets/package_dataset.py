@@ -108,7 +108,7 @@ def package_neural_dataset(
         cache_directory=catalog_cache_directory,
     )
 
-    module = import_module(f"bonner.datasets.neural.{identifier}")
+    module = import_module(f"bonner.datasets.{identifier}")
     package_fn = getattr(module, "package")
     identifier = getattr(module, "IDENTIFIER")
 
