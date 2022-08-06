@@ -8,22 +8,6 @@ import xarray as xr
 from bonner.brainio import Catalog
 
 
-def load_data_assembly(
-    catalog: Catalog,
-    identifier: str,
-    use_cached: bool = True,
-    check_integrity: bool = True,
-    validate: bool = True,
-) -> xr.DataArray:
-    path = catalog.load_data_assembly(
-        identifier=identifier,
-        use_cached=use_cached,
-        check_integrity=check_integrity,
-        validate=validate,
-    )
-    return xr.open_dataarray(path)
-
-
 def package_data_assembly(
     catalog: Catalog,
     assembly: xr.DataArray | xr.Dataset,
