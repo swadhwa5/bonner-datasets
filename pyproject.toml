@@ -35,6 +35,7 @@ dependencies = [
     "h5py",
     "scipy",
     "nipy",
+    # TODO add bonner-brainio dependency
 ]
 dynamic = ["version"]
 

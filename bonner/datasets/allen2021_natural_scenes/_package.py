@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from bonner.brainio import Catalog
 
 from ._utils import IDENTIFIER, N_SUBJECTS
@@ -16,35 +14,25 @@ def package(
     location: str,
     force_download: bool,
 ) -> None:
-    # TODO uncomment this once fully packaged
-    # download_dataset(force_download=force_download)
-    # save_images()
-    # stimulus_set = create_stimulus_set()
-    # package_stimulus_set(
-    #     catalog=catalog,
-    #     identifier=IDENTIFIER,
-    #     stimulus_set=stimulus_set,
-    #     location_type=location_type,
-    #     location=location,
-    #     class_csv="",
-    #     class_zip="",
-    # )
+    download_dataset(force_download=force_download)
+    save_images()
+    stimulus_set = create_stimulus_set()
+    package_stimulus_set(
+        catalog=catalog,
+        identifier=IDENTIFIER,
+        stimulus_set=stimulus_set,
+        location_type=location_type,
+        location=location,
+        class_csv="",
+        class_zip="",
+    )
 
-    for subject in range(1, N_SUBJECTS):  # TODO change back when done
-        # TODO delete this and uncomment next paragraph
-        path = catalog.cache_directory / f"{IDENTIFIER}-subject{subject}.nc"
-        catalog.package_data_assembly(
-            path=path,
+    for subject in range(N_SUBJECTS):
+        assembly = create_data_assembly(subject)
+        package_data_assembly(
+            catalog=catalog,
+            assembly=assembly,
             location_type=location_type,
-            location=f"{location}/{path.name}",
+            location=location,
             class_="",
         )
-
-        # assembly = create_data_assembly(subject)
-        # package_data_assembly(
-        #     catalog=catalog,
-        #     assembly=assembly,
-        #     location_type=location_type,
-        #     location=location,
-        #     class_="",
-        # )

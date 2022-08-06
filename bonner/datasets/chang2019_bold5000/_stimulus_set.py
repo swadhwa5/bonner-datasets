@@ -2,16 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from ...utils.brainio.stimulus_set import package
-from .utils import IDENTIFIER
 
-
-def package_stimulus_set(
-    catalog_name: str,
-    location_type: str,
-    location: str,
-    **kwargs: str,
-) -> None:
+def create_stimulus_set() -> pd.DataFrame:
     parent_dir = Path("BOLD5000_Stimuli") / "Scene_Stimuli" / "Presented_Stimuli"
     image_paths = list(parent_dir.rglob("*.*"))
     stimulus_set = pd.DataFrame.from_dict(
@@ -21,10 +13,4 @@ def package_stimulus_set(
             "filename": [str(path.relative_to(parent_dir)) for path in image_paths],
         }
     )
-    package(
-        identifier=IDENTIFIER,
-        stimulus_set=stimulus_set,
-        catalog_name=catalog_name,
-        location_type=location_type,
-        location=location,
-    )
+    return stimulus_set
