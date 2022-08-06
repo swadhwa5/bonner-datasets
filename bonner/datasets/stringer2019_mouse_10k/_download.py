@@ -18,12 +18,12 @@ def download_dataset(force_download: bool = False) -> None:
     download_file(urls[filename], filepath=Path(filename), force=force_download)
 
 
-def save_images() -> None:
+def save_images() -> list[Path]:
     images = loadmat("images_natimg2800_all.mat", simplify_cells=True)["imgs"]
     Path("images").mkdir(parents=True, exist_ok=True)
     paths = []
     for i_image in range(images.shape[-1]):
-        path = Path("images") / f"{i_image:04}.png"
+        path = Path("images") / f"image{i_image:04}.png"
         paths.append(path)
         Image.fromarray(images[:, :, i_image]).save(path)
     return paths

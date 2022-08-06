@@ -93,7 +93,6 @@ def package_neural_dataset(
     force_download: bool = False,
 ) -> None:
     """Package a neural dataset to an existing BrainIO Catalog.
-    \f
 
     :param identifier: identifier of the neural dataset (e.g. bonner2021_object2vec)
     :param catalog_identifier: identifier of the BrainIO Catalog
@@ -126,5 +125,5 @@ def package_neural_dataset(
 
 if __name__ == "__main__":
     package_neural_dataset.callback(
-        identifier="allen2021_natural_scenes",
+        identifier="stringer2019_mouse_10k",
     )

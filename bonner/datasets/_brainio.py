@@ -26,7 +26,7 @@ def load_data_assembly(
 
 def package_data_assembly(
     catalog: Catalog,
-    assembly: xr.DataArray,
+    assembly: xr.DataArray | xr.Dataset,
     location_type: str,
     location: str,
     class_: str,
@@ -34,7 +34,8 @@ def package_data_assembly(
     identifier = assembly.attrs["identifier"]
     path = catalog.cache_directory / f"{identifier}.nc"
 
-    assembly = assembly.to_dataset(name=identifier, promote_attrs=True)
+    if isinstance(assembly, xr.DataArray):
+        assembly = assembly.to_dataset(name=identifier, promote_attrs=True)
     assembly.to_netcdf(path)
 
     catalog.package_data_assembly(

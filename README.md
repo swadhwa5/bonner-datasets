@@ -1,5 +1,14 @@
 # Datasets
 
+## BrainIO
+
+- [x] Allen 2021, Natural Scenes
+- [x] Bonner 2021, Object2Vec
+
+## Custom
+
+- [x] Stringer 2019, Mouse
+
 ## Environment variables
 
 `BONNER_DATASETS_CACHE`
