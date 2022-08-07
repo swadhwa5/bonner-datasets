@@ -44,7 +44,7 @@ docs = ["sphinx", "sphinx-autodoc-typehints", "pydocstringformatter"]
 dev = ["black", "mypy"]
 
 [project.scripts]
-package-neural-dataset = "bonner.datasets.neural.package_dataset:package_neural_dataset"
+package-neural-dataset = "bonner.datasets.neural.package_dataset:package_dataset"
 
 [tool.black]
 preview = true
