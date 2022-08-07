@@ -27,7 +27,7 @@ classifiers = [
 ]
 urls = {repository = "https://github.com/BonnerLab/bonner-datasets"}
 dependencies = [
-    "click",
+    "click-extra",
     "boto3",
     "numpy",
     "pandas",
@@ -44,7 +44,7 @@ docs = ["sphinx", "sphinx-autodoc-typehints", "pydocstringformatter"]
 dev = ["black", "mypy"]
 
 [project.scripts]
-package-neural-dataset = "bonner.datasets.neural.package_dataset:package_dataset"
+package-dataset = "bonner.datasets:package_dataset"
 
 [tool.black]
 preview = true

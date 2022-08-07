@@ -102,7 +102,3 @@ def package_dataset(
         location_type=upload_location_type,
         force_download=download_force,
     )
-
-
-if __name__ == "__main__":
-    package_dataset(auto_envvar_prefix="BONNER_DATASETS")
