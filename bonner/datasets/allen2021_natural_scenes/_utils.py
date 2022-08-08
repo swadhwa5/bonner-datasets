@@ -1,4 +1,5 @@
 import functools
+from collections.abc import Iterable
 from pathlib import Path
 
 import numpy as np
@@ -53,7 +54,7 @@ def load_stimulus_metadata() -> pd.DataFrame:
     return metadata
 
 
-def get_shared_stimulus_ids(assemblies: dict[int, xr.DataArray]) -> list[str]:
+def get_shared_stimulus_ids(assemblies: Iterable[xr.DataArray]) -> list[str]:
     """Gets the IDs of the stimuli shared across all the participants in the experiment.
 
     :return: shared_stimulus_ids
@@ -61,10 +62,7 @@ def get_shared_stimulus_ids(assemblies: dict[int, xr.DataArray]) -> list[str]:
     return list(
         functools.reduce(
             lambda x, y: x & y,
-            [
-                set(assemblies[subject]["stimulus_id"].values)
-                for subject in range(N_SUBJECTS)
-            ],
+            [set(assembly["stimulus_id"].values) for assembly in assemblies],
         )
     )
 

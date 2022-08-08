@@ -1,26 +1,27 @@
 from importlib import import_module
-from typing import Any
-import tomli as tomllib
-
 import os
 from pathlib import Path
 
-from click_extra import extra_command, argument, option, config_option
+import click
+import click_extra
 from click_extra import Path as ClickPath
 from bonner.brainio import Catalog
 
 
-@extra_command()
-@argument("identifier")
-@config_option(default=Path.home() / ".config" / "bonner-datasets" / "config.toml")
-@option(
+@click.command(no_args_is_help=True)
+@click.argument("identifier")
+@click_extra.config_option(
+    type=ClickPath(path_type=Path),
+    default=Path.home() / ".config" / "bonner-datasets" / "config.toml",
+)
+@click.option(
     "-n",
     "--catalog-identifier",
     default="bonner-datasets",
     show_default=True,
     help="identifier of the Catalog",
 )
-@option(
+@click.option(
     "-c",
     "--catalog-csv",
     type=ClickPath(path_type=Path),
@@ -28,7 +29,7 @@ from bonner.brainio import Catalog
     show_default=True,
     help="path to the Catalog CSV file",
 )
-@option(
+@click.option(
     "-d",
     "--catalog-cache",
     type=ClickPath(path_type=Path),
@@ -36,14 +37,14 @@ from bonner.brainio import Catalog
     show_default=True,
     help="path to the Catalog cache directory",
 )
-@option(
+@click.option(
     "-t",
     "--upload-location-type",
     default="local",
     show_default=True,
     help="BrainIO 'location_type' of the file to be packaged",
 )
-@option(
+@click.option(
     "-l",
     "--upload-location",
     type=ClickPath(path_type=Path),
@@ -53,7 +54,7 @@ from bonner.brainio import Catalog
     show_default=True,
     help="BrainIO 'location' of the files to be packaged",
 )
-@option(
+@click.option(
     "-D",
     "--download-cache",
     type=ClickPath(path_type=Path),
@@ -61,7 +62,7 @@ from bonner.brainio import Catalog
     show_default=True,
     help="cache directory for downloaded files",
 )
-@option(
+@click.option(
     "-f",
     "--download-force",
     is_flag=True,
@@ -71,7 +72,6 @@ from bonner.brainio import Catalog
 )
 def package_dataset(
     identifier: str,
-    config: Path,
     catalog_identifier: str,
     catalog_csv: Path | None,
     catalog_cache: Path | None,
@@ -80,25 +80,34 @@ def package_dataset(
     download_cache: Path,
     download_force: bool,
 ) -> None:
-    """Package a neural dataset to an existing BrainIO Catalog."""
+    """Package a dataset to a BrainIO Catalog.
 
-    catalog = Catalog(
-        catalog_identifier,
-        csv_file=catalog_csv,
-        cache_directory=catalog_cache,
-    )
+    \b
+    The following datasets are available:
+        allen2021_natural_scenes
+        bonner2021_object2vec
+        chang2019_bold5000
+        stringer2019_mouse_10k
+    """
+    click.echo(f"{catalog_csv}")
 
-    module = import_module(f"bonner.datasets.{identifier}")
-    package_fn = getattr(module, "package")
-    identifier = getattr(module, "IDENTIFIER")
+    # catalog = Catalog(
+    #     catalog_identifier,
+    #     csv_file=catalog_csv,
+    #     cache_directory=catalog_cache,
+    # )
 
-    download_cache = download_cache / identifier
-    download_cache.mkdir(parents=True, exist_ok=True)
+    # module = import_module(f"bonner.datasets.{identifier}")
+    # package_fn = getattr(module, "package")
+    # identifier = getattr(module, "IDENTIFIER")
 
-    os.chdir(download_cache)
-    package_fn(
-        catalog=catalog,
-        location=upload_location,
-        location_type=upload_location_type,
-        force_download=download_force,
-    )
+    # download_cache = download_cache / identifier
+    # download_cache.mkdir(parents=True, exist_ok=True)
+
+    # os.chdir(download_cache)
+    # package_fn(
+    #     catalog=catalog,
+    #     location=upload_location,
+    #     location_type=upload_location_type,
+    #     force_download=download_force,
+    # )
