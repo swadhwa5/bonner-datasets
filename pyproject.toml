@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bonner-datasets"
-description = "Bonner lab utilities for handling neural and image datasets"
+description = "Bonner lab utilities for handling neural datasets"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
@@ -34,7 +34,7 @@ dependencies = [
     "netCDF4",
     "h5py",
     "scipy",
-    "nipy",
+    "nibabel",
     # TODO add bonner-brainio dependency
 ]
 dynamic = ["version"]
