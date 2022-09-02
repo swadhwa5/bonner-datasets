@@ -25,13 +25,13 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Typing :: Typed",
 ]
-urls = {repository = "https://github.com/BonnerLab/bonner-datasets"}
+urls = {repository = "https://github.com/BonnerLab/bonner-datasets", documentation = "https://bonnerlab.github.io/bonner-datasets/index.html"}
 dependencies = [
-    "click-extra",
     "boto3",
     "numpy",
     "pandas",
     "xarray",
+    "netcdf4-python",
     "h5py",
     "scipy",
     "nipy",
@@ -40,11 +40,25 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-docs = ["sphinx", "sphinx-autodoc-typehints", "pydocstringformatter"]
-dev = ["black", "mypy"]
-
-[project.scripts]
-package-dataset = "bonner.datasets:package_dataset"
+lint = [
+    "black",
+    "isort",
+    "pylint",
+    "docformatter",
+    "mypy",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+doc = [
+    "sphinx",
+    "furo",
+    "interrogate"
+]
+ci = [
+    "pre-commit",
+]
 
 [tool.black]
 preview = true
@@ -67,11 +81,10 @@ disallow_subclassing_any = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
-# warn_return_any = true
+warn_return_any = true
 warn_unreachable = true
 
 allow_redefinition = true
 
-[tool.pydocstringformatter]
-write = true
-summary-quotes-same-line = true
+[tool.isort]
+profile = "black"
