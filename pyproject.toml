@@ -31,7 +31,7 @@ dependencies = [
     "numpy",
     "pandas",
     "xarray",
-    "netcdf4-python",
+    "netCDF4",
     "h5py",
     "scipy",
     "nipy",
