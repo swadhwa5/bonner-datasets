@@ -5,7 +5,7 @@ from ._stimulus_set import save_images
 from ._stimulus_set import create_stimulus_set
 from ._data_assemblies import create_data_assembly
 
-from .._brainio import package_data_assembly, package_stimulus_set
+from .._utils.brainio import package_data_assembly, package_stimulus_set
 
 
 def package(
@@ -26,7 +26,7 @@ def package(
     #     class_zip="",
     # )
 
-    for subject in range(N_SUBJECTS):
+    for subject in range(2, N_SUBJECTS):
         assembly = create_data_assembly(subject)
         package_data_assembly(
             catalog=catalog,

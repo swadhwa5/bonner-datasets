@@ -10,7 +10,7 @@ from ._utils import (
     BUCKET_NAME,
     N_STIMULI,
 )
-from .._utils import download_from_s3
+from .._utils import s3
 
 
 def create_stimulus_set() -> pd.DataFrame:
@@ -24,7 +24,7 @@ def create_stimulus_set() -> pd.DataFrame:
 
 def save_images() -> None:
     filepath = Path("nsddata_stimuli") / "stimuli" / "nsd" / "nsd_stimuli.hdf5"
-    download_from_s3(filepath, bucket=BUCKET_NAME)
+    s3.download(filepath, bucket=BUCKET_NAME)
 
     stimuli = xr.open_dataset(filepath)["imgBrick"]
 

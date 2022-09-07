@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 import zipfile
 
+from loguru import logger
 import pandas as pd
 import xarray as xr
 
@@ -10,7 +11,7 @@ from bonner.brainio import Catalog
 
 def package_data_assembly(
     catalog: Catalog,
-    assembly: xr.DataArray | xr.Dataset,
+    assembly: xr.Dataset,
     location_type: str,
     location: str,
     class_: str,
@@ -18,8 +19,7 @@ def package_data_assembly(
     identifier = assembly.attrs["identifier"]
     path = catalog.cache_directory / f"{identifier}.nc"
 
-    if isinstance(assembly, xr.DataArray):
-        assembly = assembly.to_dataset(name=identifier, promote_attrs=True)
+    logger.info(f"Writing assembly {identifier} to {path}")
     assembly.to_netcdf(path)
 
     catalog.package_data_assembly(
@@ -49,9 +49,18 @@ def load_stimulus_set(
     path_cache = catalog.cache_directory / identifier
 
     if not all([(path_cache / subpath).exists() for subpath in csv["filename"]]):
+        logger.info(f"The stimulus set {identifier} at {path_cache} is incomplete")
         if path_cache.exists():
+            logger.info(
+                f"Deleting the existing stimulus set {identifier} at {path_cache}"
+            )
             shutil.rmtree(path_cache)
+
         path_cache.mkdir(parents=True)
+        logger.info(
+            f"Extracting the stimulus set {identifier} from {paths['zip']} to"
+            f" {path_cache}"
+        )
         with zipfile.ZipFile(paths["zip"], "r") as f:
             f.extractall(path_cache)
 
@@ -68,9 +77,11 @@ def package_stimulus_set(
     class_zip: str,
 ) -> None:
     path_csv = catalog.cache_directory / f"{identifier}.csv"
+    logger.info(f"Writing stimulus set {identifier} CSV file to {path_csv}")
     stimulus_set.to_csv(path_csv, index=False)
 
     path_zip = catalog.cache_directory / f"{identifier}.zip"
+    logger.info(f"Zipping stimulus set {identifier} stimuli to {path_zip}")
     with zipfile.ZipFile(path_zip, "w") as zip:
         for filename in stimulus_set["filename"]:
             zip.write(filename, arcname=filename)

@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .._utils import groupby_reset, download_from_s3
+from .._utils import s3
+from .._utils.xarray import groupby_reset
 
 IDENTIFIER = "allen2021.natural_scenes"
 RESOLUTION = "1pt8mm"
@@ -56,7 +57,7 @@ def load_stimulus_metadata() -> pd.DataFrame:
     :return: stimulus metadata
     """
     filepath = Path("nsddata") / "experiments" / "nsd" / "nsd_stim_info_merged.csv"
-    download_from_s3(filepath, bucket=BUCKET_NAME)
+    s3.download(filepath, bucket=BUCKET_NAME)
     metadata = pd.read_csv(filepath, sep=",").rename(
         columns={"Unnamed: 0": "stimulus_id"}
     )
@@ -79,15 +80,17 @@ def get_shared_stimulus_ids(assemblies: Iterable[xr.DataArray]) -> list[str]:
     )
 
 
-def average_across_reps(assembly: xr.DataArray) -> xr.DataArray:
-    """Average NeuroidAssembly across repetitions of conditions.
+def average_across_reps(
+    assembly: xr.DataArray, groupby_coord: str = "stimulus_id"
+) -> xr.DataArray:
+    """Average assembly across repetitions of conditions.
 
     :param assembly: neural data
     :return: assembly with data averaged across repetitions along "stimulus_id" coordinate
     """
-    groupby = assembly.groupby("stimulus_id")
+    groupby = assembly.groupby(groupby_coord)
     assembly = groupby.mean(skipna=True, keep_attrs=True)
-    assembly = groupby_reset(assembly, "stimulus_id", "presentation")
+    assembly = groupby_reset(assembly, groupby_coord, "presentation")
     return assembly
 
 
