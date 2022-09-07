@@ -6,17 +6,17 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .._utils import groupby_reset
+from .._utils import groupby_reset, download_from_s3
 
-IDENTIFIER = "allen2021.natural-scenes"
-
+IDENTIFIER = "allen2021.natural_scenes"
+RESOLUTION = "1pt8mm"
+PREPROCESSING = "fithrf_GLMdenoise_RR"
 BUCKET_NAME = "natural-scenes-dataset"
 N_SUBJECTS = 8
+N_STIMULI = 73000
 N_SESSIONS = (40, 40, 32, 30, 40, 32, 40, 30)
 N_SESSIONS_HELD_OUT = 3
-N_MAX_SESSIONS = 40
 N_TRIALS_PER_SESSION = 750
-N_STIMULI = 73000
 ROIS = {
     "surface": (
         "streams",
@@ -33,10 +33,21 @@ ROIS = {
     ),
     "volume": ("MTL", "thalamus"),
 }
-
-
-def format_stimulus_id(idx: int) -> str:
-    return f"image{idx:05}"
+BIBTEX = """
+@article{Allen2021,
+    doi = {10.1038/s41593-021-00962-x},
+    url = {https://doi.org/10.1038/s41593-021-00962-x},
+    year = {2021},
+    month = dec,
+    publisher = {Springer Science and Business Media {LLC}},
+    volume = {25},
+    number = {1},
+    pages = {116--126},
+    author = {Emily J. Allen and Ghislain St-Yves and Yihan Wu and Jesse L. Breedlove and Jacob S. Prince and Logan T. Dowdle and Matthias Nau and Brad Caron and Franco Pestilli and Ian Charest and J. Benjamin Hutchinson and Thomas Naselaris and Kendrick Kay},
+    title = {A massive 7T {fMRI} dataset to bridge cognitive neuroscience and artificial intelligence},
+    journal = {Nature Neuroscience}
+}
+"""
 
 
 def load_stimulus_metadata() -> pd.DataFrame:
@@ -44,12 +55,13 @@ def load_stimulus_metadata() -> pd.DataFrame:
 
     :return: stimulus metadata
     """
-    metadata = pd.read_csv(
-        Path.cwd() / "nsddata" / "experiments" / "nsd" / "nsd_stim_info_merged.csv",
-        sep=",",
-    ).rename(columns={"Unnamed: 0": "stimulus_id"})
+    filepath = Path("nsddata") / "experiments" / "nsd" / "nsd_stim_info_merged.csv"
+    download_from_s3(filepath, bucket=BUCKET_NAME)
+    metadata = pd.read_csv(filepath, sep=",").rename(
+        columns={"Unnamed: 0": "stimulus_id"}
+    )
     metadata["stimulus_id"] = metadata["stimulus_id"].apply(
-        lambda idx: format_stimulus_id(idx)
+        lambda idx: f"image{idx:05}"
     )
     return metadata
 

@@ -32,7 +32,6 @@ dependencies = [
     "pandas",
     "xarray",
     "netCDF4",
-    "h5py",
     "scipy",
     "nibabel",
     # TODO add bonner-brainio dependency

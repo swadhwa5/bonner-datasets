@@ -1,297 +1,367 @@
-import itertools
+from typing import Iterable
 from pathlib import Path
 
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import xarray as xr
-import h5py
-import nibabel as nib
-from tqdm import tqdm
 
-from .._utils import load_nii
-from ._utils import (
+from bonner.datasets._utils import load_nii, download_from_s3
+from bonner.datasets.allen2021_natural_scenes._utils import (
     IDENTIFIER,
-    N_SUBJECTS,
-    ROIS,
+    RESOLUTION,
+    PREPROCESSING,
+    BUCKET_NAME,
     N_SESSIONS,
     N_SESSIONS_HELD_OUT,
-    N_MAX_SESSIONS,
     N_TRIALS_PER_SESSION,
-    format_stimulus_id,
+    ROIS,
+    BIBTEX,
     load_stimulus_metadata,
 )
 
 
-def create_data_assembly(subject: int) -> xr.DataArray:
-    stimulus_ids = _extract_stimulus_ids()
-
-    mask = _load_brain_mask(subject)
-    neuroid_metadata = _format_roi_metadata(subject)[mask.values]
-
-    assembly = (
-        xr.concat(
-            [
-                _load_activations(
-                    subject=subject,
-                    session=session,
-                    stimulus_ids=stimulus_ids[subject, session, :],
-                ).isel({"neuroid": mask})
-                for session in tqdm(
-                    # TODO remove N_SESSIONS_HELD_OUT all data are released
-                    range(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT),
-                    desc="session",
-                )
-            ],
-            dim="presentation",
-        )
-        .rename(f"{IDENTIFIER}-subject{subject}")
-        .assign_coords(
-            {
-                "ncsnr": (
-                    "neuroid",
-                    _load_ncsnr(subject).isel({"neuroid": mask}).data,
-                ),
-                "ncsnr_split1": (
-                    "neuroid",
-                    _load_ncsnr(subject, split=1).isel({"neuroid": mask}).data,
-                ),
-                "ncsnr_split2": (
-                    "neuroid",
-                    _load_ncsnr(subject, split=2).isel({"neuroid": mask}).data,
-                ),
-            }
-        )
-        .assign_coords(
-            {
-                coord: ("neuroid", series.values)
-                for coord, series in neuroid_metadata.iteritems()
-            }
-        )
-        .assign_attrs(
-            {
-                "resolution": "1.8 mm",
-                "preprocessing": "GLMsingle",
-                "brain_dimensions": mask.attrs["brain_dimensions"],
-                "structural_scan": _load_structural_scan(subject)
-                .isel({"neuroid": mask})
-                .data,
-                "identifier": f"{IDENTIFIER}-subject{subject}",
-                "stimulus_set_identifier": IDENTIFIER,
-            }
-        )
-    )
-
-    return assembly.drop_vars("neuroid")
-
-
-def _extract_stimulus_ids() -> xr.DataArray:
+def extract_stimulus_ids(subject: int) -> xr.DataArray:
     """Extract and format image IDs for all trials.
 
     :return: stimulus_ids seen at each trial with "subject", "session" and "trial" dimensions
     """
     metadata = load_stimulus_metadata()
-    metadata = np.array(metadata.iloc[:, 17:])
+    metadata = np.array(
+        metadata.loc[
+            :, [f"subject{subject + 1}_" in column for column in metadata.columns]
+        ]
+    )
+    assert metadata.shape[-1] == 3
     indices = np.nonzero(metadata)
-    trials = metadata[indices[0], indices[1]] - 1  # fix 1-indexing
+    trials = metadata[indices] - 1  # fix 1-indexing
 
-    _stimulus_ids = [format_stimulus_id(idx) for idx in indices[0]]
-    subject_ids = indices[1] // 3  # each subject has 3 columns, 1 for each possible rep
+    stimulus_ids_ = [f"image{idx:05}" for idx in indices[0]]
     session_ids = trials // N_TRIALS_PER_SESSION
     intra_session_trial_ids = trials % N_TRIALS_PER_SESSION
 
     stimulus_ids = xr.DataArray(
-        data=np.full(
-            (N_SUBJECTS, N_MAX_SESSIONS, N_TRIALS_PER_SESSION), "", dtype="<U10"
-        ),
-        dims=("subject", "session", "trial"),
+        data=np.full((N_SESSIONS[subject], N_TRIALS_PER_SESSION), "", dtype="<U10"),
+        dims=("session", "trial"),
     )
-    stimulus_ids.values[
-        subject_ids, session_ids, intra_session_trial_ids
-    ] = _stimulus_ids
-    return stimulus_ids
-
-
-def _load_roi_mapping(
-    *,
-    subject: int,
-    roi_type: str,
-    roi_group: str,
-    hemisphere: str,
-) -> tuple[np.ndarray, dict[int, str]]:
-    """Load a brain volume containing ROI integer labels and a mapping to string labels.
-
-    :param subject: subject ID
-    :param roi_type: type of ROI, can be "surface" or "volume"
-    :param roi_group: ROI group label, listed in `ROIS.values()`
-    :param hemisphere: "lh" or "rh"
-    :return: integer-labelled brain volume with mapping to ROI names
-    """
-    volume = nib.load(
-        Path.cwd()
-        / "nsddata"
-        / "ppdata"
-        / f"subj{subject + 1:02}"
-        / "func1pt8mm"
-        / "roi"
-        / f"{hemisphere}.{roi_group}.nii.gz"
-    ).get_fdata()
-
-    if roi_type == "surface":
-        filepath = (
-            Path.cwd()
-            / "nsddata"
-            / "freesurfer"
-            / f"subj{subject + 1:02}"
-            / "label"
-            / f"{roi_group}.mgz.ctab"
-        )
-    elif roi_type == "volume":
-        filepath = Path.cwd() / "nsddata" / "templates" / f"{roi_group}.ctab"
-    mapping = (
-        pd.read_csv(
-            filepath,
-            delim_whitespace=True,
-            names=("label", "roi"),
-        )
-        .set_index("roi")
-        .to_dict()["label"]
-    )
-
-    return volume, mapping
-
-
-def _format_roi_metadata(subject: int) -> pd.DataFrame:
-    """Collate and format the metadata for all ROIs.
-
-    :param subject: subject ID
-    :return: metadata for all ROIs
-    """
-    voxels = []
-    roi_indices = {}
-    for roi_type, roi_groups in ROIS.items():
-        for roi_group, hemisphere in itertools.product(roi_groups, ("lh", "rh")):
-            volume, mapping = _load_roi_mapping(
-                subject=subject,
-                roi_type=roi_type,
-                roi_group=roi_group,
-                hemisphere=hemisphere,
-            )
-            for roi, label in mapping.items():
-                if label != 0:
-                    x, y, z = np.nonzero(volume == label)
-                    roi_indices[f"roi_{roi_group}_{roi}_{hemisphere}"] = np.arange(
-                        volume.size
-                    ).reshape(volume.shape)[x, y, z]
-
-    metadata = (
-        pd.DataFrame(np.arange(volume.size), columns=["voxel"])
-        .set_index("voxel")
-        .assign(
-            **{coord[:-3]: np.full(volume.size, False) for coord in roi_indices.keys()}
-        )
-        .assign(**{"hemisphere": np.full(volume.size, np.nan)})
-    )
-
-    voxels = np.unique(np.concatenate(list(roi_indices.values())))
-    for coord, voxels in roi_indices.items():
-        metadata.loc[voxels, coord[:-3]] = True
-        metadata.loc[voxels, "hemisphere"] = coord[-2:]
-
-    return metadata
-
-
-def _load_ncsnr(subject: int, *, split: int = None) -> xr.DataArray:
-    """Load and format noise-ceiling signal-to-noise ratios (NCSNR).
-
-    :param subject: subject ID
-    :param split: the ncsnr split used, can be `1`, `2`, or `None` (all), defaults to None
-    :return: linearized NCSNR data
-    """
-    if split is None:
-        suffix = ""
-    else:
-        suffix = f"_split{split}"
-
-    return load_nii(
-        Path.cwd()
-        / "nsddata_betas"
-        / "ppdata"
-        / f"subj{subject + 1:02}"
-        / "func1pt8mm"
-        / "betas_fithrf_GLMdenoise_RR"
-        / f"ncsnr{suffix}.nii.gz"
+    stimulus_ids.values[session_ids, intra_session_trial_ids] = stimulus_ids_
+    return stimulus_ids.assign_coords(
+        {dim: (dim, np.arange(stimulus_ids.sizes[dim])) for dim in stimulus_ids.dims}
     )
 
 
-def _load_structural_scan(subject: int) -> xr.DataArray:
-    """Load and format the structural scan registered to the functional data.
-
-    :param subject: subject ID
-    :return: linearized structural scan
-    """
-    return load_nii(
-        Path.cwd()
-        / "nsddata"
-        / "ppdata"
-        / f"subj{subject + 1:02}"
-        / "func1pt8mm"
-        / "T1_to_func1pt8mm.nii.gz"
-    )
-
-
-def _load_brain_mask(subject: int) -> xr.DataArray:
+def load_brain_mask(*, subject: int, resolution: str) -> xr.DataArray:
     """Load and format a Boolean brain mask for the functional data.
 
     :param subject: subject ID
-    :return: linearized Boolean brain mask
+    :param resolution: "1pt8mm" or "1mm"
+    :return: Boolean brain mask
     """
-    return load_nii(
-        Path.cwd()
-        / "nsddata"
+    filepath = (
+        Path("nsddata")
         / "ppdata"
         / f"subj{subject + 1:02}"
-        / "func1pt8mm"
+        / f"func{resolution}"
         / "brainmask.nii.gz"
-    ).astype(bool)
+    )
+    download_from_s3(filepath, bucket=BUCKET_NAME)
+    return load_nii(Path(filepath)).astype(bool)
 
 
-def _load_activations(
+def load_betas(
     *,
     subject: int,
-    session: int,
-    stimulus_ids: xr.DataArray,
+    resolution: str,
+    preprocessing: str,
 ) -> xr.DataArray:
-    """Load functional activations.
+    """Load betas.
 
     :param subject: subject ID
-    :param session: session ID
-    :param stimulus_ids: image IDs presented during the session
-    :return: functional activations with "presentation" and "neuroid" dimensions
+    :param resolution: "1pt8mm" or "1mm"
+    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf"
+    :return: betas
     """
-    activations = h5py.File(
-        Path.cwd()
-        / "nsddata_betas"
-        / "ppdata"
-        / f"subj{subject + 1:02}"
-        / "func1pt8mm"
-        / "betas_fithrf_GLMdenoise_RR"
-        / f"betas_session{session + 1:02}.hdf5",
-        "r",
-    )["betas"]
-    return (
-        xr.DataArray(
-            data=np.array(activations, dtype=np.int16),
-            dims=("presentation", "z", "y", "x"),
-            coords={
-                "stimulus_id": ("presentation", stimulus_ids.data),
-                "session": (
-                    "presentation",
-                    session * np.ones(activations.shape[0], dtype=np.int64),
-                ),
-                "trial": ("presentation", np.arange(activations.shape[0])),
-            },
+    betas = []
+    stimulus_ids = extract_stimulus_ids(subject)
+    # TODO remove N_SESSIONS_HELD_OUT
+    sessions = np.arange(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT)
+    for session in tqdm(sessions, desc="session"):
+        filepath = (
+            Path("nsddata_betas")
+            / "ppdata"
+            / f"subj{subject + 1:02}"
+            / f"func{resolution}"
+            / f"betas_{preprocessing}"
+            / f"betas_session{session + 1:02}.hdf5"
         )
-        .transpose("presentation", "x", "y", "z")  # HDF5 file has shape (N, Z, Y, X)
-        .stack({"neuroid": ("x", "y", "z")})
-        .reset_index("neuroid")
+        download_from_s3(filepath, bucket=BUCKET_NAME)
+        betas_session = (
+            xr.open_dataset(filepath)["betas"]
+            .rename(
+                {
+                    "phony_dim_0": "presentation",
+                    "phony_dim_1": "z",
+                    "phony_dim_2": "y",
+                    "phony_dim_3": "x",
+                }
+            )
+            .transpose("presentation", "x", "y", "z")
+            .load()
+        )
+        betas.append(
+            betas_session.assign_coords(
+                {
+                    "stimulus_id": (
+                        "presentation",
+                        stimulus_ids.sel(session=session).data,
+                    ),
+                    "session": (
+                        "presentation",
+                        session
+                        * np.ones(betas_session.sizes["presentation"], dtype=np.uint32),
+                    ),
+                    "trial": (
+                        "presentation",
+                        np.arange(betas_session.sizes["presentation"]),
+                    ),
+                }
+            )
+        )
+    return xr.concat(betas, dim="presentation")
+
+
+def load_ncsnr(
+    *,
+    subject: int,
+    resolution: str,
+    preprocessing: str,
+) -> xr.DataArray:
+    """Load and format noise-ceiling signal-to-noise ratios (NCSNR).
+
+    :param subject: subject ID
+    :param resolution: "1pt8mm" or "1mm"
+    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf
+    :return: noise-ceiling SNRs
+    """
+    ncsnr = []
+    for split in (None, 1, 2):
+        if split is None:
+            suffix = ""
+        else:
+            suffix = f"_split{split}"
+        filepath = (
+            Path("nsddata_betas")
+            / "ppdata"
+            / f"subj{subject + 1:02}"
+            / f"func{resolution}"
+            / f"betas_{preprocessing}"
+            / f"ncsnr{suffix}.nii.gz"
+        )
+        download_from_s3(filepath, bucket=BUCKET_NAME)
+        ncsnr.append(load_nii(filepath).expand_dims(split=[split]))
+    return xr.concat(ncsnr, dim="split")
+
+
+def load_structural_scans(
+    *,
+    subject: int,
+    resolution: str,
+) -> xr.DataArray:
+    """Load and format the structural scans registered to the functional data.
+
+    :param subject: subject ID
+    :param resolution: "1pt8mm" or "1mm"
+    :return: structural scans
+    """
+    scans = []
+    for scan in ("T1", "T2", "SWI", "TOF"):
+        filepath = (
+            Path("nsddata")
+            / "ppdata"
+            / f"subj{subject + 1:02}"
+            / f"func{resolution}"
+            / f"{scan}_to_func{resolution}.nii.gz"
+        )
+        download_from_s3(filepath, bucket=BUCKET_NAME)
+        scans.append(load_nii(filepath).expand_dims(scan=[scan]))
+    return xr.concat(scans, dim="scan")
+
+
+def load_rois(
+    *,
+    subject: int,
+    rois: dict[str, Iterable[str]],
+    resolution: str,
+) -> xr.DataArray:
+    """Load the ROI masks for a subject.
+
+    :param subject: subject ID
+    :param rois: dict with keys "surface" and "volume", each mapping to an Iterable of ROIs
+    :param resolution: "1pt8mm" or "1mm"
+    :return: ROI masks
+    """
+    roi_masks = []
+    for roi_type, roi_groups in rois.items():
+        for roi_group in roi_groups:
+            if roi_type == "surface":
+                filepath = (
+                    Path("nsddata")
+                    / "freesurfer"
+                    / f"subj{subject + 1:02}"
+                    / "label"
+                    / f"{roi_group}.mgz.ctab"
+                )
+            elif roi_type == "volume":
+                filepath = Path("nsddata") / "templates" / f"{roi_group}.ctab"
+            download_from_s3(filepath, bucket=BUCKET_NAME)
+
+            mapping = (
+                pd.read_csv(
+                    filepath,
+                    delim_whitespace=True,
+                    names=("label", "roi"),
+                )
+                .set_index("roi")
+                .to_dict()["label"]
+            )
+
+            volumes = {}
+            for hemisphere in ("lh", "rh"):
+                filepath = (
+                    Path("nsddata")
+                    / "ppdata"
+                    / f"subj{subject + 1:02}"
+                    / f"func{resolution}"
+                    / "roi"
+                    / f"{hemisphere}.{roi_group}.nii.gz"
+                )
+                download_from_s3(filepath, bucket=BUCKET_NAME)
+                volumes[hemisphere] = load_nii(filepath)
+
+            for roi, label in mapping.items():
+                if label != 0:
+                    roi_masks.append(
+                        ((volumes["lh"] == label) & (volumes["rh"] == label))
+                        .expand_dims(roi=[roi])
+                        .assign_coords(
+                            {
+                                "group": ("roi", [roi_group]),
+                                "type": ("roi", [roi_type]),
+                            },
+                        )
+                    )
+    return xr.concat(roi_masks, dim="roi")
+
+
+def load_prf_data(subject: int, resolution: str) -> xr.DataArray:
+    """Load population receptive field mapping data.
+
+    :param subject: subject ID
+    :param resolution: "1pt8mm" or "1mm"
+    :return: pRF data
+    """
+    prf_data = []
+    for variable in (
+        "angle",
+        "eccentricity",
+        "exponent",
+        "gain",
+        "R2",
+        "size",
+    ):
+        filepath = (
+            Path("nsddata")
+            / "ppdata"
+            / f"subj{subject + 1:02}"
+            / f"func{resolution}"
+            / f"prf_{variable}.nii.gz"
+        )
+        download_from_s3(filepath, bucket=BUCKET_NAME)
+        prf_data.append(load_nii(filepath).expand_dims(variable=[variable]))
+    return xr.concat(prf_data, dim="variable")
+
+
+def load_functional_contrasts(subject: int, resolution: str) -> xr.DataArray:
+    """Load functional contrasts.
+
+    :param subject: subject ID
+    :param resolution: "1pt8mm" or "1mm"
+    :return: functional contrasts
+    """
+    categories = []
+    for filename in ("domains", "categories"):
+        filepath = Path("nsddata") / "experiments" / "floc" / f"{filename}.tsv"
+        download_from_s3(filepath, bucket=BUCKET_NAME)
+
+        categories += list(pd.read_csv(filepath, sep="\t").iloc[:, 0].values)
+
+    floc_data = {}
+    for category in categories:
+        floc_data[category] = []
+        for metric in ("tval", "anglemetric"):
+            filepath = (
+                Path("nsddata")
+                / "ppdata"
+                / f"subj{subject + 1:02}"
+                / f"func{resolution}"
+                / f"floc_{category}{metric}.nii.gz"
+            )
+            download_from_s3(filepath, bucket=BUCKET_NAME)
+
+            floc_data[category].append(
+                load_nii(filepath).expand_dims(
+                    {
+                        "category": [category],
+                        "metric": [metric],
+                    }
+                )
+            )
+        floc_data[category] = xr.concat(floc_data[category], dim="metric")
+
+    return xr.concat(list(floc_data.values()), dim="category")
+
+
+def create_data_assembly(
+    subject: int,
+    resolution: str = RESOLUTION,
+    preprocessing: str = PREPROCESSING,
+) -> xr.Dataset:
+    """Create a data assembly.
+
+    :param subject: subject ID
+    :param resolution: "1pt8mm" or "1mm", defaults to "1pt8mm"
+    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf, defaults to "fithrf_GLMdenoise_RR"
+    :return: data assembly
+    """
+    assembly = xr.Dataset(
+        data_vars={
+            "betas": load_betas(
+                subject=subject,
+                resolution=resolution,
+                preprocessing=preprocessing,
+            ),
+            "brain_mask": load_brain_mask(subject=subject, resolution=resolution),
+            "rois": load_rois(subject=subject, rois=ROIS, resolution=resolution),
+            "ncsnr": load_ncsnr(
+                subject=subject,
+                resolution=resolution,
+                preprocessing=preprocessing,
+            ),
+            "structural_scans": load_structural_scans(
+                subject=subject, resolution=resolution
+            ),
+            "prf": load_prf_data(subject=subject, resolution=resolution),
+            "contrasts": load_functional_contrasts(
+                subject=subject, resolution=resolution
+            ),
+        },
+        attrs={
+            "identifier": f"{IDENTIFIER}-subject{subject}",
+            "stimulus_set_identifier": IDENTIFIER,
+            "subject": subject,
+            "preprocessing": preprocessing,
+            "resolution": resolution,
+            "reference": BIBTEX,
+        },
     )
+    return assembly

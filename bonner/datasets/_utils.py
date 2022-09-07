@@ -5,6 +5,7 @@ import requests
 import uuid
 
 import nibabel as nib
+import boto3
 import xarray as xr
 
 
@@ -28,6 +29,20 @@ def download_file(
         for chunk in r.iter_content(chunk_size=chunk_size):
             f.write(chunk)
     return filepath
+
+
+def download_from_s3(filepath: Path, *, bucket: str, use_cached: bool = True) -> None:
+    """Download file(s) from S3.
+
+    :param filepath: path of file in S3
+    :param bucket: S3 bucket name
+    :param use_cached: use existing file or re-download, defaults to True
+    """
+    s3 = boto3.client("s3")
+    if (not use_cached) or (not filepath.exists()):
+        filepath.parent.mkdir(exist_ok=True, parents=True)
+        with open(filepath, "wb") as f:
+            s3.download_fileobj(bucket, str(filepath), f)
 
 
 def untar_file(
@@ -54,34 +69,31 @@ def unzip_file(
     return extract_dir
 
 
-def load_nii(filepath: Path, non_spatial_dim: int = -1) -> xr.DataArray:
+def load_nii(
+    filepath: Path,
+    non_spatial_dim: int = -1,
+    non_spatial_dim_label: str = "presentation",
+) -> xr.DataArray:
     """Format an NII file as a DataArray.
 
-    :param filepath: path to NII file [must be a 3D array (x, y, z) or 4D array (presentation, x, y, z)]
-    :param non_spatial_dim: index of presentation dimension: if -1, assumed to be last dimension, else first
+    :param filepath: path to NII file [must be a 3D array (x, y, z) or 4D array e.g. (presentation, x, y, z)]
+    :param non_spatial_dim: index of non-spatial dimension: if -1, assumed to be last dimension, else first
+    :param non_spatial_dim_label: label to use for non-spatial dimension
     :return: linearized brain volume with a "neuroid" dimension
     """
     nii = nib.load(filepath).get_fdata()
 
     if nii.ndim == 3:
         dims = ["x", "y", "z"]
-        brain_dimensions = nii.shape
     elif nii.ndim == 4:
         if non_spatial_dim == -1:
-            dims = ["x", "y", "z", "presentation"]
-            brain_dimensions = nii.shape[:-1]
+            dims = ["x", "y", "z", non_spatial_dim_label]
         else:
-            dims = ["presentation", "x", "y", "z"]
-            brain_dimensions = nii.shape[1:]
+            dims = [non_spatial_dim_label, "x", "y", "z"]
 
-    return (
-        xr.DataArray(
-            data=nii,
-            dims=dims,
-        )
-        .stack({"neuroid": ("x", "y", "z")})
-        .reset_index("neuroid")
-        .assign_attrs({"brain_dimensions": brain_dimensions})
+    return xr.DataArray(
+        data=nii,
+        dims=dims,
     )
 
 

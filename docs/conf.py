@@ -19,7 +19,6 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "xarray": ("https://docs.xarray.dev/en/stable/", None),
     # "netCDF4": ("http://unidata.github.io/netcdf4-python", None),
-    "h5py": ("https://docs.h5py.org/en/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "nipy": ("http://nipy.org/nipy/api/", None),
 }
