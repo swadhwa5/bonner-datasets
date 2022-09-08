@@ -7,7 +7,7 @@ import pandas as pd
 import xarray as xr
 
 from .._utils import s3, nii
-from ._utils import (
+from .utils import (
     IDENTIFIER,
     RESOLUTION,
     PREPROCESSING,
@@ -83,6 +83,7 @@ def load_betas(
     """
     betas = []
     stimulus_ids = extract_stimulus_ids(subject)
+
     # TODO remove N_SESSIONS_HELD_OUT
     sessions = np.arange(N_SESSIONS[subject] - N_SESSIONS_HELD_OUT)
     for session in tqdm(sessions, desc="session"):
@@ -124,6 +125,10 @@ def load_betas(
                         "presentation",
                         np.arange(betas_session.sizes["presentation"]),
                     ),
+                }
+                | {
+                    dim: (dim, np.arange(betas_session.sizes[dim]))
+                    for dim in ("x", "y", "z")
                 }
             )
         )
@@ -238,18 +243,19 @@ def load_rois(
                 s3.download(filepath, bucket=BUCKET_NAME)
                 volumes[hemisphere] = nii.to_dataarray(filepath)
 
-            for roi, label in mapping.items():
-                if label != 0:
-                    roi_masks.append(
-                        ((volumes["lh"] == label) & (volumes["rh"] == label))
-                        .expand_dims(roi=[roi])
-                        .assign_coords(
-                            {
-                                "group": ("roi", [roi_group]),
-                                "type": ("roi", [roi_type]),
-                            },
+                for roi, label in mapping.items():
+                    if label != 0:
+                        roi_masks.append(
+                            (volumes[hemisphere] == label)
+                            .expand_dims(roi=[roi])
+                            .assign_coords(
+                                {
+                                    "group": ("roi", [roi_group]),
+                                    "type": ("roi", [roi_type]),
+                                    "hemisphere": ("roi", [hemisphere]),
+                                },
+                            )
                         )
-                    )
     return xr.concat(roi_masks, dim="roi")
 
 
@@ -333,7 +339,7 @@ def create_data_assembly(
     :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf, defaults to "fithrf_GLMdenoise_RR"
     :return: data assembly
     """
-    assembly = xr.Dataset(
+    return xr.Dataset(
         data_vars={
             "betas": load_betas(
                 subject=subject,
@@ -364,4 +370,3 @@ def create_data_assembly(
             "reference": BIBTEX,
         },
     )
-    return assembly

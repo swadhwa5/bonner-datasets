@@ -5,7 +5,7 @@ from PIL import Image
 import pandas as pd
 import xarray as xr
 
-from ._utils import (
+from .utils import (
     load_stimulus_metadata,
     BUCKET_NAME,
     N_STIMULI,
@@ -32,7 +32,7 @@ def save_images() -> None:
     images_dir.mkdir(parents=True, exist_ok=True)
     image_paths = [images_dir / f"image{idx:05}.png" for idx in range(N_STIMULI)]
     images = (
-        Image.fromarray(stimuli[stimulus, :, :, :])
+        Image.fromarray(stimuli[stimulus, :, :, :].values)
         for stimulus in range(stimuli.shape[0])
     )
     for image, image_path in tqdm(zip(images, image_paths), desc="image", leave=False):

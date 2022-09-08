@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import xarray as xr
 import nibabel as nib
 
@@ -27,7 +28,10 @@ def to_dataarray(
         else:
             dims = [non_spatial_dim_label, "x", "y", "z"]
 
-    return xr.DataArray(
+    nii = xr.DataArray(
         data=nii,
         dims=dims,
+    )
+    return nii.assign_coords(
+        {dim: (dim, np.arange(nii.sizes[dim])) for dim in ("x", "y", "z")}
     )

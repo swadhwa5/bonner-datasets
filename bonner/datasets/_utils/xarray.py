@@ -2,11 +2,11 @@ import xarray as xr
 
 
 def groupby_reset(
-    x: xr.DataArray, dim_groupby: str, dim_original_name: str
+    x: xr.DataArray, *, groupby_coord: str, groupby_dim: str
 ) -> xr.DataArray:
     return (
         x.reset_index(list(x.indexes))
-        .rename({dim_groupby: dim_original_name})
-        .assign_coords({dim_groupby: (dim_original_name, x[dim_groupby].values)})
-        .drop_vars(dim_original_name)
+        .rename({groupby_coord: groupby_dim})
+        .assign_coords({groupby_coord: (groupby_dim, x[groupby_coord].values)})
+        .drop_vars(groupby_dim)
     )

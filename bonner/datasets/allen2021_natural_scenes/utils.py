@@ -1,13 +1,13 @@
-import functools
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import xarray as xr
+import dask.array as da
 
 from .._utils import s3
-from .._utils.xarray import groupby_reset
 
 IDENTIFIER = "allen2021.natural_scenes"
 RESOLUTION = "1pt8mm"
@@ -67,50 +67,101 @@ def load_stimulus_metadata() -> pd.DataFrame:
     return metadata
 
 
-def get_shared_stimulus_ids(assemblies: Iterable[xr.DataArray]) -> list[str]:
+def get_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> list[str]:
     """Gets the IDs of the stimuli shared across all the participants in the experiment.
 
     :return: shared_stimulus_ids
     """
     return list(
-        functools.reduce(
-            lambda x, y: x & y,
-            [set(assembly["stimulus_id"].values) for assembly in assemblies],
+        set.intersection(
+            *[set(assembly["stimulus_id"].values) for assembly in assemblies]
         )
     )
 
 
-def average_across_reps(
-    assembly: xr.DataArray, groupby_coord: str = "stimulus_id"
+def average_betas_across_reps(
+    assembly: xr.Dataset,
+    *,
+    chunks: Mapping[str, int] = {"x": 25, "y": 25, "z": 25},
 ) -> xr.DataArray:
-    """Average assembly across repetitions of conditions.
+    stimulus_ids: dict[int, list[str]] = {}
+    indices: dict[int, list[Iterable[int]]] = {}
+    repetitions: list[int] = []
 
-    :param assembly: neural data
-    :return: assembly with data averaged across repetitions along "stimulus_id" coordinate
-    """
-    groupby = assembly.groupby(groupby_coord)
-    assembly = groupby.mean(skipna=True, keep_attrs=True)
-    assembly = groupby_reset(assembly, groupby_coord, "presentation")
-    return assembly
+    for stimulus_id, indices_group in (
+        assembly["stimulus_id"].groupby("stimulus_id").groups.items()
+    ):
+        group_size = len(indices_group)
+        if group_size not in indices:
+            indices[group_size] = []
+            stimulus_ids[group_size] = []
+        indices[group_size].append(indices_group)
+        stimulus_ids[group_size].append(stimulus_id)
+
+    for group_size in indices.keys():
+        stimulus_ids[group_size] = np.array(stimulus_ids[group_size])
+        repetitions += [group_size] * len(indices[group_size])
+
+    repetitions = np.array(repetitions)
+    stimulus_ids = np.concatenate(list(stimulus_ids.values()))
+    indices = [np.array(indices_).transpose() for indices_ in indices.values()]
+
+    def _helper_ufunc(
+        betas: da.Array,
+        *,
+        indices: Iterable[np.ndarray],
+    ) -> da.Array:
+        print("started a block")
+        betas_groups = []
+        for indices_ in indices:
+            betas_reps = []
+            for indices_rep in indices_:
+                betas_reps.append(betas[indices_rep, ...])
+            betas_groups.append(da.stack(betas_reps).astype(np.float32).mean(axis=0))
+        betas = da.concatenate(betas_groups, axis=0)
+        return betas.rechunk((betas.shape[0], *betas.chunksize[1:]))
+
+    betas = assembly["betas"].chunk(chunks=chunks)
+
+    betas = xr.apply_ufunc(
+        _helper_ufunc,
+        betas.data,
+        # input_core_dims=((0,),),
+        # exclude_dims={-1},
+        kwargs={"indices": indices},
+        dask="allowed",
+    )
+    betas = xr.DataArray(
+        name="betas",
+        data=betas,
+        dims=("presentation", "x", "y", "z"),
+        coords={
+            "stimulus_id": ("presentation", stimulus_ids),
+            "repetitions": ("presentation", repetitions),
+        },
+    )
+    betas = betas.assign_coords(
+        {dim: (dim, np.arange(betas.sizes[dim])) for dim in ("x", "y", "z")}
+    )
+    return betas
 
 
-def compute_nc(assembly: xr.DataArray) -> np.ndarray:
+def compute_nc(assembly: xr.Dataset) -> np.ndarray:
     """Compute the noise ceiling for a subject's fMRI data using the method described in the NSD Data Manual (https://cvnlab.slite.com/p/channel/CPyFRAyDYpxdkPK6YbB5R1/notes/6CusMRYfk0) under the "Conversion of ncsnr to noise ceiling percentages" section.
 
     :param assembly: neural data
     :return: noise ceilings for all voxels
     """
-    ncsnr = assembly["ncsnr"].values
     groupby = assembly["stimulus_id"].groupby("stimulus_id")
 
     counts = np.array([len(reps) for reps in groupby.groups.values()])
 
-    ncsnr_squared = ncsnr**2
     if counts is None:
         fraction = 1
     else:
         unique, counts = np.unique(counts, return_counts=True)
         reps = dict(zip(unique, counts))
         fraction = (reps[1] + reps[2] / 2 + reps[3] / 3) / (reps[1] + reps[2] + reps[3])
-    nc = ncsnr_squared / (ncsnr_squared + fraction)
-    return nc
+
+    ncsnr_squared = assembly["ncsnr"].values ** 2
+    return ncsnr_squared / (ncsnr_squared + fraction)
