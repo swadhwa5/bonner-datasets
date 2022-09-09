@@ -1,4 +1,6 @@
+from collections.abc import Sequence
 from pathlib import Path
+import copy
 
 import numpy as np
 import xarray as xr
@@ -8,30 +10,26 @@ import nibabel as nib
 def to_dataarray(
     filepath: Path,
     *,
-    non_spatial_dim: int = -1,
-    non_spatial_dim_label: str = "presentation",
+    dims: Sequence[str] = ("x", "y", "z"),
+    flatten: dict[str, Sequence[str]] = {"neuroid": ("x", "y", "z")},
 ) -> xr.DataArray:
     """Format an NII file as a DataArray.
 
     :param filepath: path to NII file [must be a 3D array (x, y, z) or 4D array e.g. (presentation, x, y, z)]
-    :param non_spatial_dim: index of non-spatial dimension: if -1, assumed to be last dimension, else first
-    :param non_spatial_dim_label: label to use for non-spatial dimension
-    :return: linearized brain volume with a "neuroid" dimension
+    :param flatten: whether to flatten all the spatial dimensions into a "neuroid" dimension
+    :return: brain volume
     """
     nii = nib.load(filepath).get_fdata()
-
-    if nii.ndim == 3:
-        dims = ["x", "y", "z"]
-    elif nii.ndim == 4:
-        if non_spatial_dim == -1:
-            dims = ["x", "y", "z", non_spatial_dim_label]
-        else:
-            dims = [non_spatial_dim_label, "x", "y", "z"]
 
     nii = xr.DataArray(
         data=nii,
         dims=dims,
     )
-    return nii.assign_coords(
-        {dim: (dim, np.arange(nii.sizes[dim])) for dim in ("x", "y", "z")}
+    nii = nii.assign_coords(
+        {dim: (dim, np.arange(nii.sizes[dim], dtype=np.uint8)) for dim in dims}
     )
+    if flatten:
+        assert len(flatten) == 1
+        dim, dims_to_flatten = copy.deepcopy(flatten).popitem()
+        nii = nii.stack({dim: dims_to_flatten}, create_index=False)
+    return nii

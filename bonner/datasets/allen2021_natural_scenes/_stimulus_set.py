@@ -5,12 +5,26 @@ from PIL import Image
 import pandas as pd
 import xarray as xr
 
-from .utils import (
-    load_stimulus_metadata,
-    BUCKET_NAME,
-    N_STIMULI,
-)
 from .._utils import s3
+from ._utils import BUCKET_NAME
+
+N_STIMULI = 73000
+
+
+def load_stimulus_metadata() -> pd.DataFrame:
+    """Load and format stimulus metadata.
+
+    :return: stimulus metadata
+    """
+    filepath = Path("nsddata") / "experiments" / "nsd" / "nsd_stim_info_merged.csv"
+    s3.download(filepath, bucket=BUCKET_NAME)
+    metadata = pd.read_csv(filepath, sep=",").rename(
+        columns={"Unnamed: 0": "stimulus_id"}
+    )
+    metadata["stimulus_id"] = metadata["stimulus_id"].apply(
+        lambda idx: f"image{idx:05}"
+    )
+    return metadata
 
 
 def create_stimulus_set() -> pd.DataFrame:

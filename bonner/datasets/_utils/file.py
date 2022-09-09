@@ -20,7 +20,7 @@ def download(
         filepath = Path("/tmp") / f"{uuid.uuid4()}"
     elif filepath.exists():
         if not force:
-            logger.info(
+            logger.debug(
                 "Using previously downloaded file at"
                 f" {filepath} instead of downloading from {url}"
             )
@@ -28,7 +28,7 @@ def download(
         else:
             filepath.unlink()
 
-    logger.info(f"Downloading from {url} to {filepath}")
+    logger.debug(f"Downloading from {url} to {filepath}")
     r = requests.Session().get(url, stream=stream, allow_redirects=allow_redirects)
     with open(filepath, "wb") as f:
         for chunk in r.iter_content(chunk_size=chunk_size):
@@ -41,12 +41,12 @@ def untar(filepath: Path, *, extract_dir: Path = None, remove_tar: bool = True) 
     if extract_dir is None:
         extract_dir = Path("/tmp")
 
-    logger.info(f"Extracting from {filepath} to {extract_dir}")
+    logger.debug(f"Extracting from {filepath} to {extract_dir}")
     with tarfile.open(filepath) as tar:
         tar.extractall(path=extract_dir)
 
     if remove_tar:
-        logger.info(f"Deleting {filepath} after extraction")
+        logger.debug(f"Deleting {filepath} after extraction")
         filepath.unlink()
 
     return extract_dir
@@ -56,12 +56,12 @@ def unzip(filepath: Path, *, extract_dir: Path = None, remove_zip: bool = True) 
     if extract_dir is None:
         extract_dir = Path("/tmp")
 
-    logger.info(f"Extracting from {filepath} to {extract_dir}")
+    logger.debug(f"Extracting from {filepath} to {extract_dir}")
     with zipfile.ZipFile(filepath, "r") as f:
         f.extractall(extract_dir)
 
     if remove_zip:
-        logger.info(f"Deleting {filepath} after extraction")
+        logger.debug(f"Deleting {filepath} after extraction")
         filepath.unlink()
 
     return extract_dir

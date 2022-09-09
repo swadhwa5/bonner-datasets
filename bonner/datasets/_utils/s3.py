@@ -22,14 +22,14 @@ def download(
         filepath_local = filepath_s3
     s3 = boto3.client("s3")
     if (not use_cached) or (not filepath_local.exists()):
-        logger.info(
+        logger.debug(
             f"Downloading {filepath_s3} from S3 bucket {bucket} to {filepath_local}"
         )
         filepath_local.parent.mkdir(exist_ok=True, parents=True)
         with open(filepath_local, "wb") as f:
             s3.download_fileobj(bucket, str(filepath_s3), f)
     else:
-        logger.info(
+        logger.debug(
             "Using previously downloaded file at"
             f" {filepath_local} instead of downloading {filepath_s3} from S3 bucket"
             f" {bucket}"
