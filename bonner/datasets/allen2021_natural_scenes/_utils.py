@@ -24,7 +24,7 @@ BIBTEX = """
 """
 
 
-def open_subject_assembly(*, subject: int, filepath: Path, **kwargs) -> xr.Dataset:
+def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Dataset:
     """Opens a subject's assembly.
 
     :param filepath: path to the dataset
@@ -74,7 +74,7 @@ def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
             groupby_dim="presentation",
         )
         .transpose("neuroid", "presentation")
-        .assign_attrs({"average_across_reps": True})
+        .assign_attrs({"average_across_reps": "True"})
     )
 
 
