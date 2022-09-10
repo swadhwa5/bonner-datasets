@@ -186,8 +186,9 @@ def load_betas(
             .stack({"neuroid": ("x", "y", "z")}, create_index=False)
             .isel({"neuroid": neuroid_filter})
             .transpose("neuroid", "presentation")
-            .astype(dtype=np.int16, order="C")
+            .astype(dtype=np.float32, order="C")
         )
+        betas_session /= 300
         betas.append(betas_session)
     return xr.concat(betas, dim="presentation")
 
@@ -507,7 +508,7 @@ def create_data_assembly(
         },
     ).to_netcdf(filepath, mode="a", group="/")
 
-    for subject in tqdm(range(4, N_SUBJECTS), desc="subject", leave=False):
+    for subject in tqdm(range(N_SUBJECTS), desc="subject", leave=False):
         create_data_assembly_subject(
             subject=subject, resolution=resolution, preprocessing=preprocessing
         ).to_netcdf(filepath, mode="a", group=f"/subject-{subject}")

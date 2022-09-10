@@ -69,22 +69,15 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
     return ncsnr_squared / (ncsnr_squared + fraction)
 
 
-def preprocess_betas(
-    betas: xr.DataArray,
-    *,
-    average_across_reps: bool = True,
-) -> xr.DataArray:
-    if average_across_reps:
-        groupby_reset(
-            betas.load()
-            .astype(dtype=np.float32, order="C")
-            .groupby("stimulus_id")
-            .mean(),
-            groupby_coord="stimulus_id",
-            groupby_dim="presentation",
-        ).transpose("neuroid", "presentation")
-    betas = betas.astype(np.float32, order="C") / 300
-    return betas
+def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
+    return groupby_reset(
+        betas.load()
+        .groupby("stimulus_id")
+        .mean()
+        .assign_attrs({"average_across_reps": True}),
+        groupby_coord="stimulus_id",
+        groupby_dim="presentation",
+    ).transpose("neuroid", "presentation")
 
 
 def filter_betas_by_roi(
@@ -92,6 +85,7 @@ def filter_betas_by_roi(
     *,
     masks: xr.DataArray,
     selectors: Iterable[Mapping[str, str]],
+    identifier: str = None,
 ) -> xr.DataArray:
     masks = masks.load().set_index({"roi": ("source", "label", "hemisphere")})
     selections = []
@@ -101,7 +95,10 @@ def filter_betas_by_roi(
             selection = np.expand_dims(selection, axis=0)
         selections.append(selection)
     mask = np.any(np.concatenate(selections, axis=0), axis=0)
-    return betas.load().isel({"neuroid": mask})
+    betas = betas.load().isel({"neuroid": mask})
+    if identifier:
+        betas = betas.assign_attrs({"voxels": identifier})
+    return betas
 
 
 def filter_betas_by_stimulus_id(

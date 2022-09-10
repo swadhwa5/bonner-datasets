@@ -16,4 +16,3 @@ stringer2019.mouse-10k-M170717_MP033_2017-08-20,assembly,059c7bb7c29d1dacac5e945
 stringer2019.mouse-10k-M170717_MP034_2017-09-11,assembly,e0af9ecadf702644978728b1ebf18a053dc6314e,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse-10k-M170717_MP034_2017-09-11.nc,stringer2019.mouse-10k,
 allen2021.natural_scenes,stimulus_set,f2155ff8b90994157897746a2298c11968f7fac4,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.csv,,
 allen2021.natural_scenes,stimulus_set,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c9,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.zip,,
-allen2021.natural_scenes,assembly,7e4a16cd35cfc7df8446f3e61b62378e88991b70,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.nc,allen2021.natural_scenes,

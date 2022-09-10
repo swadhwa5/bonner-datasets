@@ -6,7 +6,7 @@ __all__ = [
     "open_assembly",
     "compute_noise_ceiling",
     "compute_shared_stimulus_ids",
-    "preprocess_betas",
+    "average_betas_across_reps",
     "filter_betas_by_roi",
     "filter_betas_by_stimulus_id",
 ]
@@ -17,7 +17,7 @@ from ._utils import (
     open_assembly,
     compute_noise_ceiling,
     compute_shared_stimulus_ids,
-    preprocess_betas,
+    average_betas_across_reps,
     filter_betas_by_roi,
     filter_betas_by_stimulus_id,
 )
