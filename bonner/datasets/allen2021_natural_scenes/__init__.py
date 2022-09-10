@@ -3,7 +3,7 @@ __all__ = [
     "N_SUBJECTS",
     "package_data_assembly",
     "package_stimulus_set",
-    "open_assembly",
+    "open_subject_assembly",
     "compute_noise_ceiling",
     "compute_shared_stimulus_ids",
     "average_betas_across_reps",
@@ -14,7 +14,7 @@ __all__ = [
 from ._package import package_data_assembly, package_stimulus_set
 from ._utils import (
     IDENTIFIER,
-    open_assembly,
+    open_subject_assembly,
     compute_noise_ceiling,
     compute_shared_stimulus_ids,
     average_betas_across_reps,

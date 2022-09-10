@@ -24,7 +24,7 @@ BIBTEX = """
 """
 
 
-def open_assembly(filepath: Path, subject: int = None, **kwargs) -> xr.Dataset:
+def open_subject_assembly(*, subject: int, filepath: Path, **kwargs) -> xr.Dataset:
     """Opens a subject's assembly.
 
     :param filepath: path to the dataset
@@ -32,10 +32,7 @@ def open_assembly(filepath: Path, subject: int = None, **kwargs) -> xr.Dataset:
     :param **kwargs: passed on to xr.open_dataset
     :return:
     """
-    if subject is None:
-        return xr.open_dataset(filepath, group=f"/", **kwargs)
-    else:
-        return xr.open_dataset(filepath, group=f"/subject-{subject}", **kwargs)
+    return xr.open_dataset(filepath, group=f"/subject-{subject}", **kwargs)
 
 
 def compute_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> set[str]:
@@ -66,18 +63,19 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
         fraction = (reps[1] + reps[2] / 2 + reps[3] / 3) / (reps[1] + reps[2] + reps[3])
 
     ncsnr_squared = assembly["ncsnr"].sel(split=np.nan, drop=True) ** 2
-    return ncsnr_squared / (ncsnr_squared + fraction)
+    return (ncsnr_squared / (ncsnr_squared + fraction)).rename("noise ceiling")
 
 
 def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
-    return groupby_reset(
-        betas.load()
-        .groupby("stimulus_id")
-        .mean()
-        .assign_attrs({"average_across_reps": True}),
-        groupby_coord="stimulus_id",
-        groupby_dim="presentation",
-    ).transpose("neuroid", "presentation")
+    return (
+        groupby_reset(
+            betas.load().groupby("stimulus_id").mean(),
+            groupby_coord="stimulus_id",
+            groupby_dim="presentation",
+        )
+        .transpose("neuroid", "presentation")
+        .assign_attrs({"average_across_reps": True})
+    )
 
 
 def filter_betas_by_roi(

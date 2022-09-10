@@ -1,11 +1,13 @@
+from pathlib import Path
+
 import pandas as pd
 from scipy.io import loadmat
 import xarray as xr
 
-from ._utils import IDENTIFIER
+from ._utils import IDENTIFIER, SESSIONS, BIBTEX
 
 
-def create_assembly(mouse: str, date: str) -> xr.Dataset:
+def create_assembly_session(*, mouse: str, date: str) -> xr.Dataset:
     raw = loadmat(f"natimg2800_{mouse}_{date}.mat", simplify_cells=True)
     return xr.Dataset(
         data_vars={
@@ -31,8 +33,23 @@ def create_assembly(mouse: str, date: str) -> xr.Dataset:
                 pd.DataFrame(raw["stat"])["noiseLevel"].values,
             ),
         },
-        attrs={
-            "identifier": f"{IDENTIFIER}-{mouse}_{date}",
-            "stimulus_set_identifier": IDENTIFIER,
-        },
     )
+
+
+def create_data_assembly() -> Path:
+    filepath = Path(f"{IDENTIFIER}.nc")
+    xr.Dataset(
+        attrs={
+            "identifier": IDENTIFIER,
+            "stimulus_set_identifier": IDENTIFIER,
+            "reference": BIBTEX,
+        },
+    ).to_netcdf(filepath, mode="a", group="/")
+
+    for session in SESSIONS:
+        mouse = session["mouse"]
+        date = session["date"]
+        create_assembly_session(mouse=mouse, date=date).to_netcdf(
+            mode="a", group=f"/session={mouse}.{date}"
+        )
+        return filepath
