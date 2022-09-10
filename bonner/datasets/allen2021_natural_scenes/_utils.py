@@ -1,10 +1,8 @@
 from pathlib import Path
-from collections import namedtuple
 from collections.abc import Iterable, Mapping
 
 import numpy as np
 import xarray as xr
-import dask.array as da
 from .._utils.xarray import groupby_reset
 
 IDENTIFIER = "allen2021.natural_scenes"
@@ -24,8 +22,6 @@ BIBTEX = """
     journal = {Nature Neuroscience}
 }
 """
-
-Roi = namedtuple("roi", ["source", "label", "hemisphere"])
 
 
 def open_assembly(filepath: Path, subject: int = None, **kwargs) -> xr.Dataset:
@@ -73,42 +69,39 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
     return ncsnr_squared / (ncsnr_squared + fraction)
 
 
-def _average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
-    return groupby_reset(
-        betas.load().astype(dtype=np.float32, order="C").groupby("stimulus_id").mean(),
-        groupby_coord="stimulus_id",
-        groupby_dim="presentation",
-    ).transpose("neuroid", "presentation")
-
-
 def preprocess_betas(
     betas: xr.DataArray,
     *,
     average_across_reps: bool = True,
 ) -> xr.DataArray:
     if average_across_reps:
-        betas = _average_betas_across_reps(betas=betas)
-    betas.astype(np.float32, order="C") / 300
+        groupby_reset(
+            betas.load()
+            .astype(dtype=np.float32, order="C")
+            .groupby("stimulus_id")
+            .mean(),
+            groupby_coord="stimulus_id",
+            groupby_dim="presentation",
+        ).transpose("neuroid", "presentation")
+    betas = betas.astype(np.float32, order="C") / 300
     return betas
 
 
-def _compute_roi_filter(
-    masks: xr.DataArray,
+def filter_betas_by_roi(
+    betas: xr.DataArray,
     *,
-    rois: Iterable[Roi],
-    aggregation: str = "union",
-) -> np.ndarray:
-    masks = masks.load().set_index({"rois": Roi._fields})
-    masks_selected = np.stack([masks.sel(**roi._asdict()).values for roi in rois])
-    if aggregation == "union":
-        return np.any(masks_selected)
-    elif aggregation == "intersection":
-        return np.all(masks_selected)
-    else:
-        raise ValueError(
-            "'aggregation' must be either 'union' or 'intersection' (provided:"
-            f" {aggregation})"
-        )
+    masks: xr.DataArray,
+    selectors: Iterable[Mapping[str, str]],
+) -> xr.DataArray:
+    masks = masks.load().set_index({"roi": ("source", "label", "hemisphere")})
+    selections = []
+    for selector in selectors:
+        selection = masks.sel(selector).values
+        if selection.ndim == 1:
+            selection = np.expand_dims(selection, axis=0)
+        selections.append(selection)
+    mask = np.any(np.concatenate(selections, axis=0), axis=0)
+    return betas.load().isel({"neuroid": mask})
 
 
 def filter_betas_by_stimulus_id(
@@ -118,11 +111,3 @@ def filter_betas_by_stimulus_id(
     if exclude:
         selection = ~selection
     return betas.isel({"presentation": selection})
-
-
-def filter_betas_by_roi(
-    betas: xr.DataArray, masks: xr.DataArray, *, rois: Iterable[Roi], **kwargs
-) -> xr.DataArray:
-    return betas.isel(
-        {"neuroid": _compute_roi_filter(masks=masks, rois=rois, **kwargs)}
-    )
