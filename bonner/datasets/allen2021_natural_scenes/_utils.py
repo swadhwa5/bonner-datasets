@@ -29,16 +29,17 @@ def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Datas
 
     :param filepath: path to the dataset
     :param subject: subject ID
-    :param **kwargs: passed on to xr.open_dataset
-    :return:
+    :param kwargs: passed on to xr.open_dataset
+    :return: subject's assembly
     """
     return xr.open_dataset(filepath, group=f"/subject-{subject}", **kwargs)
 
 
 def compute_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> set[str]:
-    """Gets the IDs of the stimuli shared across all the participants in the experiment.
+    """Gets the IDs of the stimuli shared across all the provided assemblies.
 
-    :return: shared_stimulus_ids
+    :param assemblies: assemblies for different subjects
+    :return: shared stimulus ids
     """
     return set.intersection(
         *(set(assembly["stimulus_id"].values) for assembly in assemblies)
@@ -48,7 +49,7 @@ def compute_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> set[str]:
 def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
     """Compute the noise ceiling for a subject's fMRI data using the method described in the NSD Data Manual (https://cvnlab.slite.com/p/channel/CPyFRAyDYpxdkPK6YbB5R1/notes/6CusMRYfk0) under the "Conversion of ncsnr to noise ceiling percentages" section.
 
-    :param assembly: neural data
+    :param assembly: a subject's neural data
     :return: noise ceilings for all voxels
     """
     groupby = assembly["stimulus_id"].groupby("stimulus_id")
@@ -62,11 +63,16 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
         reps = dict(zip(unique, counts))
         fraction = (reps[1] + reps[2] / 2 + reps[3] / 3) / (reps[1] + reps[2] + reps[3])
 
-    ncsnr_squared = assembly["ncsnr"].sel(split=np.nan, drop=True) ** 2
+    ncsnr_squared = assembly["ncsnr"] ** 2
     return (ncsnr_squared / (ncsnr_squared + fraction)).rename("noise ceiling")
 
 
 def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
+    """Average the provided betas across repetitions of stimuli.
+
+    :param betas: betas
+    :return: averaged betas
+    """
     return (
         groupby_reset(
             betas.load().groupby("stimulus_id").mean(),
