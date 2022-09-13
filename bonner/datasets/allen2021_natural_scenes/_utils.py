@@ -73,15 +73,11 @@ def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
     :param betas: betas
     :return: averaged betas
     """
-    return (
-        groupby_reset(
-            betas.load().groupby("stimulus_id").mean(),
-            groupby_coord="stimulus_id",
-            groupby_dim="presentation",
-        )
-        .transpose("neuroid", "presentation")
-        .assign_attrs({"average_across_reps": "True"})
-    )
+    return groupby_reset(
+        betas.load().groupby("stimulus_id").mean(),
+        groupby_coord="stimulus_id",
+        groupby_dim="presentation",
+    ).transpose("neuroid", "presentation")
 
 
 def filter_betas_by_roi(
@@ -89,7 +85,6 @@ def filter_betas_by_roi(
     *,
     masks: xr.DataArray,
     selectors: Iterable[Mapping[str, str]],
-    identifier: str = None,
 ) -> xr.DataArray:
     masks = masks.load().set_index({"roi": ("source", "label", "hemisphere")})
     selections = []
@@ -100,8 +95,6 @@ def filter_betas_by_roi(
         selections.append(selection)
     mask = np.any(np.concatenate(selections, axis=0), axis=0)
     betas = betas.load().isel({"neuroid": mask})
-    if identifier:
-        betas = betas.assign_attrs({"voxels": identifier})
     return betas
 
 
