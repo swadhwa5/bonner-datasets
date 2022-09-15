@@ -76,8 +76,8 @@ def estimate_noise_standard_deviation(betas: xr.DataArray) -> xr.DataArray:
 
 def z_score_within_sessions(betas: xr.DataArray) -> xr.DataArray:
     def z_score(betas: xr.DataArray) -> xr.DataArray:
-        mean = betas.mean("presentation", keepdims=True)
-        std = betas.std("presentation", keepdims=True)
+        mean = betas.mean("presentation")
+        std = betas.std("presentation")
         return (betas - mean) / std
 
     return betas.load().groupby("session_id").map(func=z_score, shortcut=True)
