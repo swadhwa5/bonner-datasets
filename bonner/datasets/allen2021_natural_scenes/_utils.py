@@ -27,10 +27,12 @@ BIBTEX = """
 def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Dataset:
     """Opens a subject's assembly.
 
-    :param filepath: path to the dataset
-    :param subject: subject ID
-    :param kwargs: passed on to xr.open_dataset
-    :return: subject's assembly
+    Args:
+        filepath: path to the dataset
+        subject: subject ID
+        kwargs: passed on to xr.open_dataset
+    Returns:
+        subject's assembly
     """
     return xr.open_dataset(filepath, group=f"/subject-{subject}", **kwargs)
 
@@ -67,11 +69,27 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
     return (ncsnr_squared / (ncsnr_squared + fraction)).rename("noise ceiling")
 
 
+def estimate_noise_standard_deviation(betas: xr.DataArray) -> xr.DataArray:
+    std = betas.load().groupby("stimulus_id").std("presentation", ddof=1)
+    return std.where(std != 0).mean("presentation").rename("noise standard deviation")
+
+
+def z_score_within_sessions(betas: xr.DataArray) -> xr.DataArray:
+    def z_score(betas: xr.DataArray) -> xr.DataArray:
+        mean = betas.mean("presentation", keepdims=True)
+        std = betas.std("presentation", keepdims=True)
+        return (betas - mean) / std
+
+    return betas.load().groupby("session_id").map(func=z_score, shortcut=True)
+
+
 def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
     """Average the provided betas across repetitions of stimuli.
 
-    :param betas: betas
-    :return: averaged betas
+    Args:
+        betas: betas
+    Returns:
+        averaged betas
     """
     return groupby_reset(
         betas.load().groupby("stimulus_id").mean(),
@@ -83,18 +101,18 @@ def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
 def filter_betas_by_roi(
     betas: xr.DataArray,
     *,
-    masks: xr.DataArray,
+    rois: xr.DataArray,
     selectors: Iterable[Mapping[str, str]],
 ) -> xr.DataArray:
-    masks = masks.load().set_index({"roi": ("source", "label", "hemisphere")})
+    rois = rois.load().set_index({"roi": ("source", "label", "hemisphere")})
     selections = []
     for selector in selectors:
-        selection = masks.sel(selector).values
+        selection = rois.sel(selector).values
         if selection.ndim == 1:
             selection = np.expand_dims(selection, axis=0)
         selections.append(selection)
-    mask = np.any(np.concatenate(selections, axis=0), axis=0)
-    betas = betas.load().isel({"neuroid": mask})
+    selection = np.any(np.concatenate(selections, axis=0), axis=0)
+    betas = betas.load().isel({"neuroid": selection})
     return betas
 
 
