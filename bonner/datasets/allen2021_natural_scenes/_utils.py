@@ -83,6 +83,18 @@ def z_score_within_sessions(betas: xr.DataArray) -> xr.DataArray:
     return betas.load().groupby("session_id").map(func=z_score, shortcut=True)
 
 
+def remove_invalid_voxels(betas: xr.DataArray, validity: xr.DataArray) -> xr.DataArray:
+    neuroid_filter = np.all(
+        validity.stack({"neuroid": ("x_", "y_", "z_")}, create_index=True)[:-1, :],
+        axis=0,
+    )
+    neuroid_filter = neuroid_filter.isel({"neuroid": neuroid_filter})
+    valid_voxels = set(neuroid_filter.indexes["neuroid"].values)
+    index = betas.set_index({"neuroid": ("x", "y", "z")}).indexes["neuroid"].values
+    betas = betas.isel({"neuroid": [voxel in valid_voxels for voxel in index]})
+    return betas
+
+
 def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
     """Average the provided betas across repetitions of stimuli.
 
