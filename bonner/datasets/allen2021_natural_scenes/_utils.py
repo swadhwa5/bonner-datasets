@@ -31,6 +31,7 @@ def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Datas
         filepath: path to the dataset
         subject: subject ID
         kwargs: passed on to xr.open_dataset
+
     Returns:
         subject's assembly
     """
@@ -40,8 +41,11 @@ def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Datas
 def compute_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> set[str]:
     """Gets the IDs of the stimuli shared across all the provided assemblies.
 
-    :param assemblies: assemblies for different subjects
-    :return: shared stimulus ids
+    Args:
+        assemblies: assemblies for different subjects
+
+    Returns:
+        shared stimulus ids
     """
     return set.intersection(
         *(set(assembly["stimulus_id"].values) for assembly in assemblies)
@@ -51,8 +55,11 @@ def compute_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> set[str]:
 def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
     """Compute the noise ceiling for a subject's fMRI data using the method described in the NSD Data Manual (https://cvnlab.slite.com/p/channel/CPyFRAyDYpxdkPK6YbB5R1/notes/6CusMRYfk0) under the "Conversion of ncsnr to noise ceiling percentages" section.
 
-    :param assembly: a subject's neural data
-    :return: noise ceilings for all voxels
+    Args:
+        assembly: a subject's neural data
+
+    Returns:
+        noise ceilings for all voxels
     """
     groupby = assembly["stimulus_id"].groupby("stimulus_id")
 
@@ -70,7 +77,11 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
 
 
 def estimate_noise_standard_deviation(betas: xr.DataArray) -> xr.DataArray:
-    std = betas.load().groupby("stimulus_id").std("presentation", ddof=1)
+    std = groupby_reset(
+        betas.load().groupby("stimulus_id").std("presentation", ddof=1),
+        groupby_coord="stimulus_id",
+        groupby_dim="presentation",
+    )
     return std.where(std != 0).mean("presentation").rename("noise standard deviation")
 
 
@@ -100,6 +111,7 @@ def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
 
     Args:
         betas: betas
+
     Returns:
         averaged betas
     """
