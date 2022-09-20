@@ -497,10 +497,10 @@ def create_data_assembly(
     :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf, defaults to "fithrf_GLMdenoise_RR"
     :return: data assembly
     """
-    filepath = Path(f"{IDENTIFIER}.nc")
+    filepath = Path(f"{IDENTIFIER}-{PREPROCESSING}.nc")
     xr.Dataset(
         attrs={
-            "identifier": IDENTIFIER,
+            "identifier": f"{IDENTIFIER}-{PREPROCESSING}",
             "stimulus_set_identifier": IDENTIFIER,
             "preprocessing": preprocessing,
             "resolution": resolution,

@@ -94,7 +94,9 @@ def z_score_betas_within_sessions(betas: xr.DataArray) -> xr.DataArray:
     return betas.load().groupby("session_id").map(func=z_score, shortcut=True)
 
 
-def remove_invalid_voxels_from_betas(betas: xr.DataArray, validity: xr.DataArray) -> xr.DataArray:
+def remove_invalid_voxels_from_betas(
+    betas: xr.DataArray, validity: xr.DataArray
+) -> xr.DataArray:
     neuroid_filter = np.all(
         validity.stack({"neuroid": ("x_", "y_", "z_")}, create_index=True)[:-1, :],
         axis=0,
