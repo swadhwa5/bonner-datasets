@@ -15,9 +15,12 @@ def to_dataarray(
 ) -> xr.DataArray:
     """Format an NII file as a DataArray.
 
-    :param filepath: path to NII file [must be a 3D array (x, y, z) or 4D array e.g. (presentation, x, y, z)]
-    :param flatten: whether to flatten all the spatial dimensions into a "neuroid" dimension
-    :return: brain volume
+    Args:
+        filepath: path to NII file [must be a 3D array (x, y, z) or 4D array e.g. (presentation, x, y, z)]
+        flatten: whether to flatten all the spatial dimensions into a "neuroid" dimension
+
+    Returns:
+        brain volume
     """
     nii = nib.load(filepath).get_fdata()
 

@@ -37,7 +37,8 @@ ROI_SOURCES = {
 def extract_stimulus_ids(subject: int) -> xr.DataArray:
     """Extract and format image IDs for all trials.
 
-    :return: stimulus_ids seen at each trial with "session" and "trial" dimensions
+    Returns:
+        stimulus_ids seen at each trial with "session" and "trial" dimensions
     """
     metadata = load_stimulus_metadata()
     metadata = np.array(
@@ -66,9 +67,12 @@ def extract_stimulus_ids(subject: int) -> xr.DataArray:
 def load_brain_mask(*, subject: int, resolution: str) -> xr.DataArray:
     """Load and format a Boolean brain mask for the functional data.
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :return: Boolean brain mask
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+
+    Returns:
+        Boolean brain mask
     """
     filepath = (
         Path("nsddata")
@@ -126,10 +130,13 @@ def load_betas(
 ) -> xr.DataArray:
     """Load betas.
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf"
-    :return: betas
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+        preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf"
+
+    Returns:
+        betas
     """
     betas = []
     stimulus_ids = extract_stimulus_ids(subject)
@@ -202,10 +209,13 @@ def load_ncsnr(
 ) -> xr.DataArray:
     """Load and format noise-ceiling signal-to-noise ratios (NCSNR).
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf
-    :return: noise-ceiling SNRs
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+        preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf
+
+    Returns:
+        noise-ceiling SNRs
     """
     filepath = (
         Path("nsddata_betas")
@@ -230,9 +240,12 @@ def load_structural_scans(
 ) -> xr.DataArray:
     """Load and format the structural scans registered to the functional data.
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :return: structural scans
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+    
+    Returns:
+        structural scans
     """
     scans = []
     sequences = np.array(("T1", "T2", "SWI", "TOF"))
@@ -264,10 +277,13 @@ def load_rois(
 ) -> xr.DataArray:
     """Load the ROI masks for a subject.
 
-    :param subject: subject ID
-    :param rois: dict with keys "surface" and "volume", each mapping to an Iterable of ROIs
-    :param resolution: "1pt8mm" or "1mm"
-    :return: ROI masks
+    Args:
+        subject: subject ID
+        rois: dict with keys "surface" and "volume", each mapping to an Iterable of ROIs
+        resolution: "1pt8mm" or "1mm"
+    
+    Returns:
+        ROI masks
     """
     rois = []
     for space, sources in sources.items():
@@ -332,9 +348,12 @@ def load_receptive_fields(
 ) -> xr.DataArray:
     """Load population receptive field mapping data.
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :return: pRF data
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+    
+    Returns:
+        pRF data
     """
     prf_data = []
     quantities = np.array(
@@ -372,9 +391,12 @@ def load_functional_contrasts(
 ) -> xr.DataArray:
     """Load functional contrasts.
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :return: functional contrasts
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+    
+    Returns:
+        functional contrasts
     """
     categories = {}
     for filename in ("domains", "categories"):
@@ -434,10 +456,13 @@ def create_data_assembly_subject(
 ) -> xr.Dataset:
     """Create a subject's data assembly.
 
-    :param subject: subject ID
-    :param resolution: "1pt8mm" or "1mm"
-    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf"
-    :return: data assembly
+    Args:
+        subject: subject ID
+        resolution: "1pt8mm" or "1mm"
+        preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf"
+    
+    Returns:
+        data assembly
     """
     validity = load_validity(subject=subject, resolution=resolution)
     brain_mask = load_brain_mask(subject=subject, resolution=resolution)
@@ -493,9 +518,12 @@ def create_data_assembly(
 ) -> Path:
     """Create the full data assembly.
 
-    :param resolution: "1pt8mm" or "1mm", defaults to "1pt8mm"
-    :param preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf, defaults to "fithrf_GLMdenoise_RR"
-    :return: data assembly
+    Args:
+        resolution: "1pt8mm" or "1mm", defaults to "1pt8mm"
+        preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf, defaults to "fithrf_GLMdenoise_RR"
+    
+    Returns:
+        data assembly
     """
     filepath = Path(f"{IDENTIFIER}-{PREPROCESSING}.nc")
     xr.Dataset(

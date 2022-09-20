@@ -13,10 +13,11 @@ def download(
 ) -> None:
     """Download file(s) from S3.
 
-    :param filepath_S3: path of file in S3
-    :param bucket: S3 bucket name
-    :param filepath_local: local path of file
-    :param use_cached: use existing file or re-download, defaults to True
+    Args:
+        filepath_S3: path of file in S3
+        bucket: S3 bucket name
+        filepath_local: local path of file
+        use_cached: use existing file or re-download, defaults to True
     """
     if filepath_local is None:
         filepath_local = filepath_s3

@@ -14,7 +14,8 @@ N_STIMULI = 73000
 def load_stimulus_metadata() -> pd.DataFrame:
     """Load and format stimulus metadata.
 
-    :return: stimulus metadata
+    Returns:
+        stimulus metadata
     """
     filepath = Path("nsddata") / "experiments" / "nsd" / "nsd_stim_info_merged.csv"
     s3.download(filepath, bucket=BUCKET_NAME)

@@ -18,8 +18,11 @@ from ._utils import (
 def create_data_assembly(subject: int) -> xr.DataArray:
     """Load and format functional activations.
 
-    :param subject: subject ID
-    :return: functional activations with "presentation" and "neuroid" dimensions
+    Args:
+        subject: subject ID
+
+    Returns:
+        functional activations with "presentation" and "neuroid" dimensions
     """
     activations = loadmat(FILENAMES["activations"][subject], simplify_cells=True)[
         "betas"
