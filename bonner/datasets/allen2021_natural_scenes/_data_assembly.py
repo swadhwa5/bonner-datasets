@@ -243,7 +243,7 @@ def load_structural_scans(
     Args:
         subject: subject ID
         resolution: "1pt8mm" or "1mm"
-    
+
     Returns:
         structural scans
     """
@@ -281,7 +281,7 @@ def load_rois(
         subject: subject ID
         rois: dict with keys "surface" and "volume", each mapping to an Iterable of ROIs
         resolution: "1pt8mm" or "1mm"
-    
+
     Returns:
         ROI masks
     """
@@ -340,7 +340,7 @@ def load_rois(
                         )
     rois = xr.concat(rois, dim="roi")
     rois["label"] = rois["roi"].astype(str)
-    return rois.drop("roi")
+    return rois.drop_vars("roi")
 
 
 def load_receptive_fields(
@@ -351,7 +351,7 @@ def load_receptive_fields(
     Args:
         subject: subject ID
         resolution: "1pt8mm" or "1mm"
-    
+
     Returns:
         pRF data
     """
@@ -394,7 +394,7 @@ def load_functional_contrasts(
     Args:
         subject: subject ID
         resolution: "1pt8mm" or "1mm"
-    
+
     Returns:
         functional contrasts
     """
@@ -460,7 +460,7 @@ def create_data_assembly_subject(
         subject: subject ID
         resolution: "1pt8mm" or "1mm"
         preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf"
-    
+
     Returns:
         data assembly
     """
@@ -521,14 +521,14 @@ def create_data_assembly(
     Args:
         resolution: "1pt8mm" or "1mm", defaults to "1pt8mm"
         preprocessing: "fithrf_GLMdenoise_RR", "fithrf", or "assumehrf, defaults to "fithrf_GLMdenoise_RR"
-    
+
     Returns:
         data assembly
     """
-    filepath = Path(f"{IDENTIFIER}-{PREPROCESSING}.nc")
+    filepath = Path(f"{IDENTIFIER}.{RESOLUTION}.{PREPROCESSING}.nc")
     xr.Dataset(
         attrs={
-            "identifier": f"{IDENTIFIER}-{PREPROCESSING}",
+            "identifier": f"{IDENTIFIER}.{RESOLUTION}.{PREPROCESSING}",
             "stimulus_set_identifier": IDENTIFIER,
             "preprocessing": preprocessing,
             "resolution": resolution,

@@ -5,4 +5,5 @@ stringer2019.mouse-10k,stimulus_set,7f7803c662a489a813222402c4cd4ae0aec4eb91,rsy
 stringer2019.mouse-10k,stimulus_set,2cee216b955ab8650a0be83d4eb63fd694d90611,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse-10k.zip,,
 allen2021.natural_scenes,stimulus_set,f2155ff8b90994157897746a2298c11968f7fac4,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.csv,,
 allen2021.natural_scenes,stimulus_set,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c9,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.zip,,
-allen2021.natural_scenes,assembly,aecf91fd1232e74087b20bc4b3ecef6edd1dc2fe,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.nc,,
+allen2021.natural_scenes.1pt8mm.fithrf_GLMdenoise_RR,assembly,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c7,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.1pt8mm.fithrf_GLMdenoise_RR.nc,,
+allen2021.natural_scenes.1pt8mm.fithrf,assembly,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c8,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.1pt8mm.fithrf.nc,,

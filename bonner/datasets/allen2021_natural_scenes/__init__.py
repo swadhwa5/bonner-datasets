@@ -5,7 +5,6 @@ __all__ = [
     "package_data_assembly",
     "package_stimulus_set",
     "open_subject_assembly",
-    "estimate_noise_standard_deviation",
     "compute_noise_ceiling",
     "compute_shared_stimulus_ids",
     "remove_invalid_voxels_from_betas",
@@ -19,7 +18,6 @@ from ._package import package_data_assembly, package_stimulus_set
 from ._utils import (
     IDENTIFIER,
     open_subject_assembly,
-    estimate_noise_standard_deviation,
     compute_noise_ceiling,
     compute_shared_stimulus_ids,
     remove_invalid_voxels_from_betas,

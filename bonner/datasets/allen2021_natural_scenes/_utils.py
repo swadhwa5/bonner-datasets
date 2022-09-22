@@ -76,15 +76,6 @@ def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
     return (ncsnr_squared / (ncsnr_squared + fraction)).rename("noise ceiling")
 
 
-def estimate_noise_standard_deviation(betas: xr.DataArray) -> xr.DataArray:
-    std = groupby_reset(
-        betas.load().groupby("stimulus_id").std("presentation", ddof=1),
-        groupby_coord="stimulus_id",
-        groupby_dim="presentation",
-    )
-    return std.where(std != 0).mean("presentation").rename("noise standard deviation")
-
-
 def z_score_betas_within_sessions(betas: xr.DataArray) -> xr.DataArray:
     def z_score(betas: xr.DataArray) -> xr.DataArray:
         mean = betas.mean("presentation")
