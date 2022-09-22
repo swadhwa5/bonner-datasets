@@ -82,7 +82,33 @@ def z_score_betas_within_sessions(betas: xr.DataArray) -> xr.DataArray:
         std = betas.std("presentation")
         return (betas - mean) / std
 
-    return betas.load().groupby("session_id").map(func=z_score, shortcut=True)
+    return (
+        betas.load()
+        .groupby("session_id")
+        .map(func=z_score, shortcut=True)
+        .assign_attrs(betas.attrs)
+        .rename(betas.name)
+    )
+
+
+def z_score_betas_within_runs(betas: xr.DataArray) -> xr.DataArray:
+    parities = betas["session_id"].values % 2
+    n_runs = [62 if parity == 1 else 63 for parity in parities]
+    run_id = betas["trial"].values // n_runs
+    betas["run_id"] = ("presentation", run_id)
+
+    def z_score(betas: xr.DataArray) -> xr.DataArray:
+        mean = betas.mean("presentation")
+        std = betas.std("presentation")
+        return (betas - mean) / std
+
+    return (
+        betas.load()
+        .groupby("run_id")
+        .map(func=z_score, shortcut=True)
+        .assign_attrs(betas.attrs)
+        .rename(betas.name)
+    )
 
 
 def remove_invalid_voxels_from_betas(
@@ -109,7 +135,11 @@ def average_betas_across_reps(betas: xr.DataArray) -> xr.DataArray:
         averaged betas
     """
     return groupby_reset(
-        betas.load().groupby("stimulus_id").mean(),
+        betas.load()
+        .groupby("stimulus_id")
+        .mean()
+        .assign_attrs(betas.attrs)
+        .rename(betas.name),
         groupby_coord="stimulus_id",
         groupby_dim="presentation",
     ).transpose("neuroid", "presentation")
