@@ -92,9 +92,15 @@ def z_score_betas_within_sessions(betas: xr.DataArray) -> xr.DataArray:
 
 
 def z_score_betas_within_runs(betas: xr.DataArray) -> xr.DataArray:
-    parities = betas["session_id"].values % 2
-    n_runs = [62 if parity == 1 else 63 for parity in parities]
-    run_id = betas["trial"].values // n_runs
+    # even-numbered trials (i.e. Python indices 1, 3, 5, ...) had 62 trials
+    # odd-numbered trials (i.e. Python indices 0, 2, 4, ...) had 63 trials
+    n_runs_per_session = 12
+    n_sessions = len(np.unique(betas["session_id"]))
+    run_id = []
+    for i_session in range(n_sessions):
+        for i_run in range(n_runs_per_session):
+            n_trials = 63 if i_run % 2 == 0 else 62
+            run_id.extend([i_run + i_session * n_runs_per_session] * n_trials)
     betas["run_id"] = ("presentation", run_id)
 
     def z_score(betas: xr.DataArray) -> xr.DataArray:

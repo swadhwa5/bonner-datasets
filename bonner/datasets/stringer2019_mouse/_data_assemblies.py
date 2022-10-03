@@ -44,12 +44,14 @@ def create_data_assembly() -> Path:
             "stimulus_set_identifier": IDENTIFIER,
             "reference": BIBTEX,
         },
-    ).to_netcdf(filepath, mode="a", group="/")
+    ).to_netcdf(filepath, mode="a", group="/", engine="netcdf4")
 
     for session in SESSIONS:
         mouse = session["mouse"]
         date = session["date"]
         create_assembly_session(mouse=mouse, date=date).to_netcdf(
-            mode="a", group=f"/session={mouse}.{date}"
+            filepath,
+            mode="a",
+            group=f"/session={mouse}.{date}",
         )
         return filepath
