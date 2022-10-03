@@ -1,3 +1,8 @@
+import xarray as xr
+import torch
+from bonner.computation.pca import PCA
+
+
 BIBTEX = """
 @article{Stringer2019,
   doi = {10.1038/s41586-019-1346-5},
@@ -44,3 +49,25 @@ SESSIONS = (
         "date": "2017-09-11",
     },
 )
+
+
+def preprocess_assembly(assembly: xr.Dataset) -> xr.DataArray:
+    spontaneous = assembly["spontaneous activity"]
+    mean = spontaneous.mean("time")
+    std = spontaneous.std("time")
+
+    spontaneous = (spontaneous - mean) / std
+    spontaneous = spontaneous.dropna("neuroid")
+
+    stimulus_related = (assembly["stimulus-related activity"] - mean) / std
+    stimulus_related = stimulus_related.dropna("neuroid")
+
+    pca = PCA(n_components=32)
+    pca.fit(torch.from_numpy(spontaneous.values).to("cuda"))
+
+    stimulus_related -= (
+        pca.inverse_transform(pca.transform(torch.from_numpy(stimulus_related.values)))
+        .cpu()
+        .numpy()
+    )
+    return stimulus_related.rename(assembly.attrs["identifier"])
