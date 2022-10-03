@@ -54,4 +54,4 @@ def create_data_assembly() -> Path:
             mode="a",
             group=f"/session={mouse}.{date}",
         )
-        return filepath
+    return filepath

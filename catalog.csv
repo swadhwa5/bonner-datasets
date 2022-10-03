@@ -1,10 +1,10 @@
 identifier,lookup_type,sha1,location_type,location,stimulus_set_identifier,class
 bonner2021.object2vec,stimulus_set,3e02db41c90f7b99f4b9bd5a1757c2a46cc50f92,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/bonner2021.object2vec.zip,,
 bonner2021.object2vec,stimulus_set,cf8d63af2f1f5e9d9113316e9953506cce13c02b,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/bonner2021.object2vec.csv,,
-stringer2019.mouse-10k,assembly,688876440bce179bc420bfaf5f1e5c84e73ca011,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse-10k.nc,stringer2019.mouse-10k,
-stringer2019.mouse-10k,stimulus_set,7f7803c662a489a813222402c4cd4ae0aec4eb91,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse-10k.csv,,
-stringer2019.mouse-10k,stimulus_set,2cee216b955ab8650a0be83d4eb63fd694d90611,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse-10k.zip,,
 allen2021.natural_scenes,stimulus_set,f2155ff8b90994157897746a2298c11968f7fac4,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.csv,,
 allen2021.natural_scenes,stimulus_set,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c9,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.zip,,
 allen2021.natural_scenes.1pt8mm.fithrf_GLMdenoise_RR,assembly,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c7,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.1pt8mm.fithrf_GLMdenoise_RR.nc,allen2021.natural_scenes,
 allen2021.natural_scenes.1pt8mm.fithrf,assembly,cfbf58b0d6c5c0ccd37dae2df499cfe2985e16c8,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/allen2021.natural_scenes.1pt8mm.fithrf.nc,allen2021.natural_scenes,
+stringer2019.mouse,stimulus_set,7f7803c662a489a813222402c4cd4ae0aec4eb91,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse.csv,,
+stringer2019.mouse,stimulus_set,36c7a33a966026e5b9be1c96b3d8447c18fb0739,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse.zip,,
+stringer2019.mouse,assembly,0f3f14f79b93ef9b6e6f5e18f5f28f9782346a06,rsync,cogsci-ml.win.ad.jhu.edu:/export/data2/shared/brainio/bonner-datasets/stringer2019.mouse.nc,stringer2019.mouse,

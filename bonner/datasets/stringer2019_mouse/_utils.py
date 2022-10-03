@@ -18,7 +18,7 @@ BIBTEX = """
   journal = {Nature}
 }
 """
-IDENTIFIER = "stringer2019.mouse-10k"
+IDENTIFIER = "stringer2019.mouse"
 SESSIONS = (
     {
         "mouse": "M160825_MP027",
