@@ -9,6 +9,7 @@ You can (probably) find extensive documentation on the [`bonner-datasets` websit
 
     ```python
     from pathlib import Path
+    from bonner.brainio import Catalog
 
     CATALOG = Catalog(
         identifier="bonner-datasets",
