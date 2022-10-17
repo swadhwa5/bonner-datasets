@@ -1,6 +1,5 @@
 import xarray as xr
-import torch
-from bonner.computation.pca import PCA
+from scipy.sparse.linalg import eigsh
 
 
 BIBTEX = """
@@ -54,20 +53,16 @@ SESSIONS = (
 def preprocess_assembly(assembly: xr.Dataset) -> xr.DataArray:
     spontaneous = assembly["spontaneous activity"]
     mean = spontaneous.mean("time")
-    std = spontaneous.std("time")
+    std = spontaneous.std("time") + 1e-6
 
     spontaneous = (spontaneous - mean) / std
-    spontaneous = spontaneous.dropna("neuroid")
 
     stimulus_related = (assembly["stimulus-related activity"] - mean) / std
-    stimulus_related = stimulus_related.dropna("neuroid")
-
-    pca = PCA(n_components=32)
-    pca.fit(torch.from_numpy(spontaneous.values).to("cuda"))
-
-    stimulus_related -= (
-        pca.inverse_transform(pca.transform(torch.from_numpy(stimulus_related.values)))
-        .cpu()
-        .numpy()
+    stimulus_related = stimulus_related.isel(
+        {"presentation": stimulus_related["stimulus_id"].values != "blank"}
     )
-    return stimulus_related.rename(assembly.attrs["identifier"])
+
+    _, eigenvectors = eigsh(spontaneous.values.T @ spontaneous.values, k=32)
+    stimulus_related -= (stimulus_related.values @ eigenvectors) @ eigenvectors.T
+    stimulus_related -= stimulus_related.mean("presentation")
+    return stimulus_related

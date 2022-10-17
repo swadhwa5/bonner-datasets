@@ -30,6 +30,7 @@ def download(
 
     logger.debug(f"Downloading from {url} to {filepath}")
     r = requests.Session().get(url, stream=stream, allow_redirects=allow_redirects)
+    filepath.parent.mkdir(exist_ok=True, parents=True)
     with open(filepath, "wb") as f:
         for chunk in r.iter_content(chunk_size=chunk_size):
             f.write(chunk)
