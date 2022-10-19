@@ -50,16 +50,21 @@ def compute_shared_stimulus_ids(
     Returns:
         shared stimulus ids
     """
-    return set.intersection(
-        *[
-            set(
-                assembly["stimulus_id"].values[
-                    (assembly["rep_id"] == n_repetitions - 1).values
-                ]
-            )
-            for assembly in assemblies
-        ]
-    )
+    try:
+        return set.intersection(
+            *[
+                set(
+                    assembly["stimulus_id"].values[
+                        (assembly["rep_id"] == n_repetitions - 1).values
+                    ]
+                )
+                for assembly in assemblies
+            ]
+        )
+    except:
+        return set.intersection(
+            *[set(assembly["stimulus_id"].values) for assembly in assemblies]
+        )
 
 
 def compute_noise_ceiling(assembly: xr.Dataset) -> xr.DataArray:
