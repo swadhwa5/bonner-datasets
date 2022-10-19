@@ -1,5 +1,5 @@
 from pathlib import Path
-from collections.abc import Iterable, Mapping
+from collections.abc import Collection, Mapping
 
 import numpy as np
 import xarray as xr
@@ -38,17 +38,27 @@ def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Datas
     return xr.open_dataset(filepath, group=f"/subject-{subject}", **kwargs)
 
 
-def compute_shared_stimulus_ids(assemblies: Iterable[xr.Dataset]) -> set[str]:
+def compute_shared_stimulus_ids(
+    assemblies: Collection[xr.DataArray], n_repetitions: int = 0
+) -> set[str]:
     """Gets the IDs of the stimuli shared across all the provided assemblies.
 
     Args:
         assemblies: assemblies for different subjects
+        n_repetitions: minimum number of repetitions for the shared stimuli in each subject
 
     Returns:
         shared stimulus ids
     """
     return set.intersection(
-        *(set(assembly["stimulus_id"].values) for assembly in assemblies)
+        *[
+            set(
+                assembly["stimulus_id"].values[
+                    (assembly["rep_id"] == n_repetitions - 1).values
+                ]
+            )
+            for assembly in assemblies
+        ]
     )
 
 
@@ -155,7 +165,7 @@ def filter_betas_by_roi(
     betas: xr.DataArray,
     *,
     rois: xr.DataArray,
-    selectors: Iterable[Mapping[str, str]],
+    selectors: Collection[Mapping[str, str]],
 ) -> xr.DataArray:
     rois = rois.load().set_index({"roi": ("source", "label", "hemisphere")})
     selections = []
