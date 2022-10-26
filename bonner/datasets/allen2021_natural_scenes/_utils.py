@@ -39,7 +39,7 @@ def open_subject_assembly(subject: int, *, filepath: Path, **kwargs) -> xr.Datas
 
 
 def compute_shared_stimulus_ids(
-    assemblies: Collection[xr.DataArray], n_repetitions: int = 0
+    assemblies: Collection[xr.DataArray], n_repetitions: int = 1
 ) -> set[str]:
     """Gets the IDs of the stimuli shared across all the provided assemblies.
 
