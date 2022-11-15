@@ -13,6 +13,7 @@ __all__ = [
     "average_betas_across_reps",
     "filter_betas_by_roi",
     "filter_betas_by_stimulus_id",
+    "_transform",
 ]
 
 from ._package import package_data_assembly, package_stimulus_set
@@ -29,3 +30,4 @@ from ._utils import (
     filter_betas_by_stimulus_id,
 )
 from ._data_assembly import N_SUBJECTS, ROI_SOURCES
+from ._transform import _transform
