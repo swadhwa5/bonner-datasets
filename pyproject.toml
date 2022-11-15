@@ -34,7 +34,6 @@ dependencies = [
     "netCDF4",
     "scipy",
     "nibabel",
-    "nsdcode",
     # TODO add bonner-brainio dependency
 ]
 dynamic = ["version"]
