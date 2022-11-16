@@ -13,68 +13,19 @@ import nibabel as nib
 from .._utils import s3
 from ._utils import BUCKET_NAME
 
-
-def transform_volume_to_fsaverage(*args, **kwargs):
-    native_surface = transform_volume_to_native_surface(*args, **kwargs)
-
-
-
-def transform_volume_to_native_surface(
-    volume: np.ndarray,
-    *,
-    subject: int,
-    source_space: str = "funct1pt8",
-    interpolation_type: str = "cubic",
-    layers: Collection[str] = (
-        "layerB1",
-        "layerB2",
-        "layerB3",
-    ),
-    average_across_layers: bool = True,
-):
-    native_surface: dict[str, dict[str, np.ndarray]] = {}
-    for hemisphere in ("lh", "rh"):
-        native_surface[hemisphere] = {}
-        for layer in layers:
-            transformation = load_transformation(
-                subject=subject,
-                source_space=f"{hemisphere}.{source_space}",
-                target_space=layer,
-            )
-
-            native_surface[hemisphere][layer] = _transform(
-                volume,
-                transformation=transformation,
-                target_type="surface",
-                interpolation_type=interpolation_type,
-            )
-
-        if average_across_layers:
-            native_surface[hemisphere] = np.vstack(native_surface[hemisphere].values())
-            native_surface[hemisphere] = {
-                "average": np.mean(native_surface[hemisphere], axis=0)
-            }
-
-        header, affine = load_native_surface_header(
-            subject=subject, hemisphere=hemisphere
-        )
-        for layer, data in native_surface.items():
-            vol_h = data[:, np.newaxis].astype(np.float64)
-            v_img = nib.freesurfer.mghformat.MGHImage(
-                vol_h, affine, header=header, extra={}
-            )
-            v_img.to_filename(f"temp")
+MNI_ORIGIN = np.asarray([183 - 91, 127, 73]) - 1
+MNI_RESOLUTION = 1
 
 
 def load_transformation(
-    subject: int, *, source_space: str, target_space: str
+    subject: int, *, source_space: str, target_space: str, suffix: str
 ) -> np.ndarray:
     filepath = (
         Path("nsddata")
         / "ppdata"
         / f"subj{subject + 1:02}"
         / "transforms"
-        / f"{source_space}-to-{target_space}.nii.gz"
+        / f"{source_space}-to-{target_space}{suffix}"
     )
 
     s3.download(filepath, bucket=BUCKET_NAME)
@@ -82,19 +33,20 @@ def load_transformation(
     return transformation
 
 
-def load_native_surface_header(
-    subject: int, *, hemisphere: str
+def load_native_surface(
+    subject: int, *, hemisphere: str, surface_type: str = "w-g.pct.mgh"
 ) -> tuple[np.ndarray, np.ndarray]:
     filepath = (
         Path("nsddata")
         / "freesurfer"
         / f"subj{subject + 1:02}"
         / f"surf"
-        / f"{hemisphere}.w-g.pct.mgh"
+        / f"{hemisphere}.{surface_type}"
     )
     s3.download(filepath, bucket=BUCKET_NAME)
-    image = nib.freesurfer.mghformat.load(filepath)
-    return image.header, image.affine
+    return filepath
+    # image = nib.freesurfer.mghformat.load(filepath)
+    # return image.header, image.affine
 
 
 def _interpolate(
@@ -167,9 +119,20 @@ def _transform(
     data: np.ndarray,
     *,
     transformation: np.ndarray,
-    target_type: str = "volume",
     interpolation_type: str,
+    target_type: str,
 ) -> np.ndarray:
+    """_summary_
+
+    Args:
+        data: data to be transformed from one space to another
+        transformation: transformation matrix
+        interpolation_type: passed to _interpolate
+        target_type: "volume" or "surface"
+
+    Returns:
+        Transformed data
+    """
     target_shape = transformation.shape[:3]
 
     coordinates = np.c_[
@@ -201,3 +164,85 @@ def _transform(
         return transformed_data[0]
     else:
         return np.vstack(transformed_data)
+
+
+def _ndarray_to_nifti1image(
+    data: np.ndarray, *, resolution: float, origin: np.ndarray = None
+) -> nib.Nifti1Image:
+    header = nib.Nifti1Header()
+    header.set_data_dtype(data.dtype)
+
+    affine = np.diag([resolution] * 3 + [1])
+    if origin is None:
+        origin = (([1, 1, 1] + np.asarray(data.shape)) / 2) - 1
+    affine[0, -1] = -origin[0] * resolution
+    affine[1, -1] = -origin[1] * resolution
+    affine[2, -1] = -origin[2] * resolution
+
+    return nib.Nifti1Image(data, affine, header)
+
+
+def transform_volume_to_mni(
+    data: np.ndarray, *, subject: int, source_space: str, interpolation_type: str
+) -> nib.Nifti1Image:
+    transformation = load_transformation(
+        subject=subject, source_space=source_space, target_space="MNI", suffix=".nii.gz"
+    )
+    transformed_data = _transform(
+        data=data,
+        transformation=transformation,
+        target_type="volume",
+        interpolation_type=interpolation_type,
+    )
+    return _ndarray_to_nifti1image(
+        transformed_data, resolution=MNI_RESOLUTION, origin=MNI_ORIGIN
+    )
+
+
+def transform_volume_to_native_surface(
+    data: np.ndarray,
+    *,
+    subject: int,
+    source_space: str = "func1pt8",
+    interpolation_type: str = "cubic",
+    layers: Collection[str] = (
+        "layerB1",
+        "layerB2",
+        "layerB3",
+    ),
+    average_across_layers: bool = True,
+) -> dict[str, dict[str, np.ndarray]]:
+    native_surface: dict[str, dict[str, np.ndarray]] = {}
+    for hemisphere in ("lh", "rh"):
+        native_surface[hemisphere] = {}
+        for layer in layers:
+            transformation = load_transformation(
+                subject=subject,
+                source_space=f"{hemisphere}.{source_space}",
+                target_space=layer,
+                suffix=".mgz",
+            )
+
+            native_surface[hemisphere][layer] = _transform(
+                data,
+                transformation=transformation,
+                target_type="surface",
+                interpolation_type=interpolation_type,
+            )
+
+        if average_across_layers:
+            native_surface[hemisphere] = {
+                "average": np.vstack(list(native_surface[hemisphere].values())).mean(
+                    axis=0
+                )
+            }
+    return native_surface
+    # header, affine = load_native_surface_header(
+    #     subject=subject, hemisphere=hemisphere
+    # )
+    # for layer, data in native_surface.items():
+    #     vol_h = data[:, np.newaxis].astype(np.float64)
+    #     v_img = nib.freesurfer.mghformat.MGHImage(
+    #         vol_h, affine, header=header, extra={}
+    #     )
+    #     v_img.to_filename(f"temp")

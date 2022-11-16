@@ -30,4 +30,3 @@ from ._utils import (
     filter_betas_by_stimulus_id,
 )
 from ._data_assembly import N_SUBJECTS, ROI_SOURCES
-from ._transform import _transform
